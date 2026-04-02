@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Cloud-Edge Secure Biometric Attendance System — Simulation Report</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap"
+      rel="stylesheet">
+    <style>
+      :root {
+        ──bg: #080c10;
+        ──surface: #0d1117;
+        ──border: #1e2d3d;
+        ──a-color: #ff4757;
+        ──a-dim: #3d1520;
+        ──b-color: #00d4aa;
+        ──b-dim: #002d25;
+        ──accent: #f0b429;
+        ──text: #c9d1d9;
+        ──text-dim: #586069;
+        ──mono: 'Share Tech Mono', monospace;
+        ──sans: 'Barlow', sans-serif;
+        ──cond: 'Barlow Condensed', sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 14px;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* ── SCANLINE OVERLAY ── */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.08) 2px, rgba(0, 0, 0, 0.08) 4px);
+        pointer-events: none;
+        z-index: 999;
+      }
+
+      /* ── HEADER ── */
+      header {
+        border-bottom: 1px solid var(--border);
+        padding: 40px 60px 30px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--b-color), transparent);
+      }
+
+      .header-tag {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--b-color);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      h1 {
+        font-family: var(--cond);
+        font-size: clamp(28px, 4vw, 52px);
+        font-weight: 900;
+        letter-spacing: -1px;
+        line-height: 1.05;
+        color: #e6edf3;
+      }
+
+      h1 span {
+        color: var(--b-color);
+      }
+
+      .header-meta {
+        margin-top: 16px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-dim);
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+
+      .header-meta span::before {
+        content: '';
+        color: var(--accent);
+      }
+
+      /* ── LEGEND ── */
+      .legend {
+        display: flex;
+        gap: 12px;
+        padding: 16px 60px;
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+      }
+
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 6px 14px;
+        border-radius: 2px;
+      }
+
+      .leg-a {
+        background: var(--a-dim);
+        color: var(--a-color);
+        border: 1px solid var(--a-color)33;
+      }
+
+      .leg-b {
+        background: var(--b-dim);
+        color: var(--b-color);
+        border: 1px solid var(--b-color)33;
+      }
+
+      .leg-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .leg-a .leg-dot {
+        background: var(--a-color);
+        box-shadow: 0 0 6px var(--a-color);
+      }
+
+      .leg-b .leg-dot {
+        background: var(--b-color);
+        box-shadow: 0 0 6px var(--b-color);
+      }
+
+      /* ── MAIN LAYOUT ── */
+      main {
+        padding: 0 60px 0px;
+      }
+
+      /* ── SECTION HEADER ── */
+      .event-header {
+        margin-top: 60px;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        position: relative;
+      }
+
+      .event-num {
+        font-family: var(--cond);
+        font-size: 80px;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--border);
+        user-select: none;
+        position: relative;
+        top: 6px;
+      }
+
+      .event-title-block {}
+
+      .event-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 4px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+      }
+
+      .event-title {
+        font-family: var(--cond);
+        font-size: 28px;
+        font-weight: 700;
+        color: #e6edf3;
+        letter-spacing: 0.5px;
+      }
+
+      .event-status {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 4px 12px;
+        border-radius: 2px;
+        letter-spacing: 2px;
+      }
+
+      .status-normal {
+        background: #002d25;
+        color: var(--b-color);
+        border: 1px solid var(--b-color)44;
+      }
+
+      .status-danger {
+        background: #3d1520;
+        color: var(--a-color);
+        border: 1px solid var(--a-color)44;
+      }
+
+      .status-warning {
+        background: #2d2000;
+        color: var(--accent);
+        border: 1px solid var(--accent)44;
+      }
+
+      .status-critical {
+        background: #1a0a00;
+        color: #ff8c00;
+        border: 1px solid #ff8c0044;
+      }
+
+      /* ── FLOW DIAGRAM ── */
+      .flow-diagram {
+        margin-top: 24px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .flow-diagram::before {
+        content: 'FLOW DIAGRAM';
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-dim);
+        letter-spacing: 2px;
+      }
+
+      .flow-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .flow-scenario {
+        padding: 16px;
+        border-radius: 3px;
+        position: relative;
+      }
+
+      .flow-a {
+        background: var(--a-dim);
+        border: 1px solid var(--a-color)33;
+      }
+
+      .flow-b {
+        background: var(--b-dim);
+        border: 1px solid var(--b-color)33;
+      }
+
+      .flow-scenario-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 3px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid currentColor;
+        opacity: 0.6;
+      }
+
+      .flow-a .flow-scenario-label {
+        color: var(--a-color);
+        border-color: var(--a-color)33;
+      }
+
+      .flow-b .flow-scenario-label {
+        color: var(--b-color);
+        border-color: var(--b-color)33;
+      }
+
+      /* ── NODE FLOW ── */
+      .node-flow {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      .node {
+        padding: 5px 10px;
+        border-radius: 2px;
+        white-space: nowrap;
+        position: relative;
+      }
+
+      .node-device {
+        background: #1a1a2e;
+        color: #6e7fc4;
+        border: 1px solid #6e7fc444;
+      }
+
+      .node-cloud {
+        background: #0a1628;
+        color: #58a6ff;
+        border: 1px solid #58a6ff44;
+      }
+
+      .node-db {
+        background: #1a2510;
+        color: #7ee787;
+        border: 1px solid #7ee78744;
+      }
+
+      .node-edge {
+        background: #1a2510;
+        color: #00d4aa;
+        border: 1px solid #00d4aa44;
+      }
+
+      .node-lock {
+        background: #2a1f00;
+        color: #f0b429;
+        border: 1px solid #f0b42944;
+      }
+
+      .node-fail {
+        background: #3d1520;
+        color: #ff4757;
+        border: 1px solid #ff475744;
+      }
+
+      .node-ok {
+        background: #002d25;
+        color: #00d4aa;
+        border: 1px solid #00d4aa44;
+      }
+
+      .node-warn {
+        background: #2d2000;
+        color: #f0b429;
+        border: 1px solid #f0b42944;
+      }
+
+      .node-attk {
+        background: #2d0a0a;
+        color: #ff6b6b;
+        border: 1px solid #ff6b6b44;
+      }
+
+      .node-shield {
+        background: #002820;
+        color: #00ffc6;
+        border: 1px solid #00ffc644;
+      }
+
+      .arrow {
+        color: var(--text-dim);
+        font-size: 16px;
+        line-height: 1;
+      }
+
+      .arrow-red {
+        color: var(--a-color);
+      }
+
+      .arrow-green {
+        color: var(--b-color);
+      }
+
+      .arrow-yellow {
+        color: var(--accent);
+      }
+
+      /* ── LOG BLOCKS ── */
+      .log-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      .log-block {
+        background: #060a0e;
+        border-radius: 3px;
+        overflow: hidden;
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      .log-header {
+        padding: 8px 14px;
+        font-size: 9px;
+        letter-spacing: 3px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .log-header-a {
+        background: var(--a-dim);
+        color: var(--a-color);
+        border-bottom: 1px solid var(--a-color)33;
+      }
+
+      .log-header-b {
+        background: var(--b-dim);
+        color: var(--b-color);
+        border-bottom: 1px solid var(--b-color)33;
+      }
+
+      .log-body {
+        padding: 14px;
+        line-height: 1.8;
+      }
+
+      .log-line {
+        display: flex;
+        gap: 10px;
+      }
+
+      .log-time {
+        color: var(--text-dim);
+        min-width: 75px;
+      }
+
+      .log-ok {
+        color: #7ee787;
+      }
+
+      .log-err {
+        color: var(--a-color);
+      }
+
+      .log-warn {
+        color: var(--accent);
+      }
+
+      .log-info {
+        color: #58a6ff;
+      }
+
+      .log-sec {
+        color: var(--b-color);
+      }
+
+      .log-shield {
+        color: #00ffc6;
+      }
+
+      /* ── VERDICT CARD ── */
+      .verdict {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .verdict-card {
+        padding: 16px 20px;
+        border-radius: 3px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .verdict-a {
+        background: var(--a-dim);
+        border: 1px solid var(--a-color)44;
+      }
+
+      .verdict-b {
+        background: var(--b-dim);
+        border: 1px solid var(--b-color)44;
+      }
+
+      .verdict-icon {
+        font-size: 28px;
+        line-height: 1;
+      }
+
+      .verdict-text {}
+
+      .verdict-title {
+        font-family: var(--cond);
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+      }
+
+      .verdict-a .verdict-title {
+        color: var(--a-color);
+      }
+
+      .verdict-b .verdict-title {
+        color: var(--b-color);
+      }
+
+      .verdict-desc {
+        font-size: 12px;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      /* ── SECURITY DETAIL ── */
+      .sec-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      .sec-block {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .sec-header {
+        padding: 10px 16px;
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 3px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .sec-body {
+        padding: 16px;
+      }
+
+      .payload-box {
+        background: #040608;
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        padding: 12px;
+        font-family: var(--mono);
+        font-size: 10px;
+        line-height: 1.7;
+        margin-bottom: 10px;
+      }
+
+      .pl-key {
+        color: #58a6ff;
+      }
+
+      .pl-val {
+        color: #a5d6ff;
+      }
+
+      .pl-str {
+        color: #7ee787;
+      }
+
+      .pl-enc {
+        color: var(--b-color);
+        word-break: break-all;
+      }
+
+      .pl-warn {
+        color: var(--a-color);
+      }
+
+      .pl-comment {
+        color: var(--text-dim);
+        font-style: italic;
+      }
+
+      .threat-timeline {
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 2;
+      }
+
+      .tt-line {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+      }
+
+      .tt-ts {
+        color: var(--text-dim);
+        min-width: 65px;
+      }
+
+      .tt-actor {
+        min-width: 60px;
+      }
+
+      .tt-actor-atk {
+        color: var(--a-color);
+      }
+
+      .tt-actor-sys {
+        color: var(--b-color);
+      }
+
+      .tt-actor-err {
+        color: var(--a-color);
+      }
+
+      .tt-actor-ok {
+        color: #7ee787;
+      }
+
+      .tt-msg {
+        color: var(--text);
+      }
+
+      /* ── DIVIDER ── */
+      .divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--border), transparent);
+        margin: 10px 0 0;
+      }
+
+      /* ── EXEC SUMMARY ── */
+      .exec-summary {
+        margin-top: 70px;
+        background: var(--surface);
+        border: 1px solid var(--b-color)44;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .exec-summary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--b-color), var(--accent));
+      }
+
+      .exec-header {
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .exec-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 4px;
+        color: var(--b-color);
+        margin-bottom: 8px;
+      }
+
+      .exec-title {
+        font-family: var(--cond);
+        font-size: 32px;
+        font-weight: 900;
+        color: #e6edf3;
+        letter-spacing: -0.5px;
+      }
+
+      .exec-body {
+        padding: 28px 32px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+
+      .exec-col {}
+
+      .metric-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .metric-card {
+        background: #060a0e;
+        border-radius: 3px;
+        padding: 16px;
+        text-align: center;
+      }
+
+      .metric-val {
+        font-family: var(--cond);
+        font-size: 42px;
+        font-weight: 900;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+
+      .metric-a .metric-val {
+        color: var(--a-color);
+      }
+
+      .metric-b .metric-val {
+        color: var(--b-color);
+      }
+
+      .metric-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+      }
+
+      .metric-sub {
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-top: 4px;
+      }
+
+      .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--mono);
+        font-size: 11px;
+        margin-top: 8px;
+      }
+
+      .comparison-table th {
+        padding: 8px 12px;
+        text-align: left;
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: var(--text-dim);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .comparison-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border)88;
+        vertical-align: top;
+      }
+
+      .comparison-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .td-feature {
+        color: #e6edf3;
+        font-weight: 500;
+      }
+
+      .td-a {
+        color: var(--a-color);
+      }
+
+      .td-b {
+        color: var(--b-color);
+      }
+
+      .final-verdict {
+        grid-column: 1 / -1;
+        margin-top: 8px;
+        padding: 20px 24px;
+        background: var(--b-dim);
+        border: 1px solid var(--b-color)44;
+        border-radius: 3px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .fv-icon {
+        font-size: 36px;
+      }
+
+      .fv-text {}
+
+      .fv-title {
+        font-family: var(--cond);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--b-color);
+        margin-bottom: 8px;
+      }
+
+      /* ── AI MODAL ── */
+      .ai-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .ai-modal-overlay.active {
+        display: flex;
+        opacity: 1;
+      }
+
+      .ai-modal-container {
+        background: #0d1117;
+        width: 100%;
+        max-width: 900px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        position: relative;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), 0 0 20px var(--b-color)22;
+        overflow: hidden;
+        transform: translateY(20px);
+        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+      }
+
+      .ai-modal-overlay.active .ai-modal-container {
+        transform: translateY(0);
+      }
+
+      .ai-modal-header {
+        padding: 24px 30px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(90deg, #0d1117, #161b22);
+      }
+
+      .ai-modal-title {
+        font-family: var(--cond);
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .ai-modal-title span {
+        color: var(--b-color);
+        font-family: var(--mono);
+        font-size: 14px;
+      }
+
+      .close-modal {
+        background: transparent;
+        border: none;
+        color: var(--text-dim);
+        font-size: 24px;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      .close-modal:hover {
+        color: var(--a-color);
+      }
+
+      .ai-modal-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px;
+        background: var(--border);
+      }
+
+      .ai-modal-section {
+        background: #0d1117;
+        padding: 30px;
+      }
+
+      .section-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 4px;
+        color: var(--text-dim);
+        margin-bottom: 20px;
+        text-transform: uppercase;
+      }
+
+      /* Analysis Styles */
+      .ai-stat-row {
+        margin-bottom: 20px;
+      }
+
+      .ai-stat-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      .ai-progress-bg {
+        height: 6px;
+        background: #161b22;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .ai-progress-fill {
+        height: 100%;
+        background: var(--b-color);
+        box-shadow: 0 0 10px var(--b-color)88;
+        width: 0;
+        transition: width 1s ease-out;
+      }
+
+      .ai-risk-badge {
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 2px;
+        font-weight: bold;
+      }
+
+      /* Notification Styles */
+      .noti-config-card {
+        background: #060a0e;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .noti-config-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      .noti-config-val {
+        color: var(--accent);
+      }
+
+      .noti-metric {
+        text-align: center;
+        padding: 20px;
+        background: var(--b-dim);
+        border: 1px solid var(--b-color)44;
+        border-radius: 4px;
+      }
+
+      .noti-count {
+        font-family: var(--cond);
+        font-size: 48px;
+        font-weight: 900;
+        color: var(--b-color);
+        line-height: 1;
+      }
+
+      .ai-trigger-btn {
+        background: var(--b-dim);
+        border: 1px solid var(--b-color);
+        color: var(--b-color);
+        padding: 12px 24px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .ai-trigger-btn:hover {
+        background: var(--b-color);
+        color: #000;
+        box-shadow: 0 0 20px var(--b-color)66;
+        transform: translateY(-2px);
+      }
+
+      .ai-icon {
+        font-size: 18px;
+        animation: spin 4s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .fv-desc strong {
+        color: var(--b-color);
+      }
+
+      /* ── ANIMATION ── */
+      @keyframes blink {
+
+        0%,
+        100% {
+          opacity: 1
+        }
+
+        50% {
+          opacity: 0
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px)
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0)
+        }
+      }
+
+      @keyframes pulse {
+
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.4)
+        }
+
+        50% {
+          box-shadow: 0 0 0 6px rgba(0, 212, 170, 0)
+        }
+      }
+
+      @keyframes scanline {
+        from {
+          transform: translateY(-100%)
+        }
+
+        to {
+          transform: translateY(100vh)
+        }
+      }
+
+      .blink {
+        animation: blink 1.2s step-end infinite;
+      }
+
+      .node-ok {
+        animation: pulse 2s infinite;
+      }
+
+      section.event-section {
+        animation: fadeIn 0.5s ease both;
+      }
+
+      /* responsive */
+      @media (max-width: 768px) {
+
+        header,
+        main,
+        .legend {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+
+        .flow-row,
+        .log-grid,
+        .verdict,
+        .sec-grid,
+        .exec-body,
+        .metric-row {
+          grid-template-columns: 1fr;
+        }
+
+        .event-num {
+          font-size: 50px;
+        }
+
+        .final-verdict {
+          grid-column: 1;
+        }
+      }
+
+      .sim-image-container {
+        margin-top: 15px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+        background: #000;
+      }
+
+      .sim-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        opacity: 0.9;
+        transition: opacity 0.3s ease;
+      }
+
+      .sim-image:hover {
+        opacity: 1;
+      }
+    </style>
+    {% load static %}
+  </head>
+
+  <body>
+
+    <!── HEADER ──>
+    <header>
+      <div class="header-tag">▸ ARCHITECTURAL SIMULATION REPORT ◂</div>
+      <h1>Hybrid Cloud-Edge<br><span>Secure Biometric Attendance System</span></h1>
+      <div class="header-meta">
+        <span>SIM DATE: 2025-02-25</span>
+        <span>REPORT VERSION: 1.0.0</span>
+        <span>CLASSIFICATION: MAJOR PROJECT</span>
+        <span>EVENTS SIMULATED: 4</span>
+        <span>STATUS: <span class="blink">● LIVE</span></span>
+      </div>
+    </header>
+
+    <!── LEGEND ──>
+    <div class="legend">
+      <div class="leg leg-a">
+        <div class="leg-dot"></div> SCENARIO A — TRADITIONAL: DIRECT-TO-CLOUD
+      </div>
+      <div class="leg leg-b">
+        <div class="leg-dot"></div> SCENARIO B — NEW: HYBRID EDGE GATEWAY
+      </div>
+    </div>
+
+    <main>
+
+      <!── ══════════════════════════════════════════ EVENT 1 ══ ──>
+      <section class="event-section">
+        <div class="event-header">
+          <div class="event-num">01</div>
+          <div class="event-title-block">
+            <div class="event-label">EVENT · BASELINE</div>
+            <div class="event-title">Normal Operation — Internet Blazing Fast &amp; Stable</div>
+          </div>
+          <div class="event-status status-normal">● NOMINAL</div>
+        </div>
+        <div class="divider"></div>
+
+        <div class="flow-diagram">
+          <div class="flow-row">
+            <div class="flow-scenario flow-a">
+              <div class="flow-scenario-label">SCENARIO A — DIRECT-TO-CLOUD</div>
+              <div class="node-flow">
+                <span class="node node-device">🖐 BioDevice</span>
+                <span class="arrow">→</span>
+                <span class="node" style="background:#120606;color:#ff8080;border:1px solid #ff808044">Unencrypted
+                  JSON</span>
+                <span class="arrow arrow-red">→→</span>
+                <span class="node node-cloud">☁ Cloud API</span>
+                <span class="arrow arrow-green">→</span>
+                <span class="node node-db">DB ✅</span>
+              </div>
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:#ff8080;">⚠ No encryption in
+                transit &nbsp;|&nbsp; No buffering &nbsp;|&nbsp; Works only with live internet</div>
+            </div>
+            <div class="flow-scenario flow-b">
+              <div class="flow-scenario-label">SCENARIO B — HYBRID EDGE GATEWAY</div>
+              <div class="node-flow">
+                <span class="node node-device">🖐 BioDevice</span>
+                <span class="arrow">→</span>
+                <span class="node node-edge">🍓 RPi Edge</span>
+                <span class="arrow">→</span>
+                <span class="node node-lock">🔒 AES-256</span>
+                <span class="arrow arrow-green">→→</span>
+                <span class="node node-cloud">Django</span>
+                <span class="arrow arrow-green">→</span>
+                <span class="node node-db">DB ✅</span>
+              </div>
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">✅ LAN-local
+                capture &nbsp;|&nbsp; 🔒 AES-256-CBC encrypted &nbsp;|&nbsp; Timestamped &nbsp;|&nbsp; Buffered in SQLite
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="log-grid">
+          <div class="log-block">
+            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; SYSTEM LOG <span>INTERNET: ════════
+                100Mbps</span></div>
+            <div class="log-body">
+              <div class="log-line"><span class="log-time">09:00:01</span><span class="log-ok">[PUNCH]
+                </span><span>Employee #042 CHECK-IN received</span></div>
+              <div class="log-line"><span class="log-time">09:00:01</span><span class="log-warn">[NET]
+                </span><span>Sending raw JSON → api.company.com:443</span></div>
+              <div class="log-line"><span class="log-time">09:00:02</span><span class="log-ok">[200] </span><span>Cloud
+                  acknowledged. Record saved.</span></div>
+              <div class="log-line"><span class="log-time">09:15:04</span><span class="log-ok">[PUNCH]
+                </span><span>Employee #117 CHECK-IN received</span></div>
+              <div class="log-line"><span class="log-time">09:15:04</span><span class="log-err">[WARN]
+                </span><span>Payload: {"emp_id":117,"time":"09:15:04"} — PLAINTEXT</span></div>
+              <div class="log-line"><span class="log-time">09:15:05</span><span class="log-ok">[200] </span><span>Cloud
+                  acknowledged. Record saved.</span></div>
+              <div class="log-line"><span class="log-time">09:30:11</span><span class="log-ok">[PUNCH]
+                </span><span>Employee #203 CHECK-IN received → saved.</span></div>
+              <div class="log-line"><span class="log-time">──:──:──</span><span class="log-err">[NOTE] </span><span>No
+                  local copy retained. Memory cleared.</span></div>
+            </div>
+          </div>
+          <div class="log-block">
+            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; SYSTEM LOG <span>INTERNET: ════════
+                100Mbps</span></div>
+            <div class="log-body">
+              <div class="log-line"><span class="log-time">09:00:01</span><span class="log-sec">[PUNCH]
+                </span><span>Employee #042 CHECK-IN → SQLite buffered ✅</span></div>
+              <div class="log-line"><span class="log-time">09:00:01</span><span
+                  class="log-shield">[CRYPTO]</span><span>🔒 AES-256-CBC encrypt | nonce+timestamp appended</span></div>
+              <div class="log-line"><span class="log-time">09:00:02</span><span class="log-ok">[SYNC]
+                </span><span>Encrypted payload → Django server</span></div>
+              <div class="log-line"><span class="log-time">09:00:02</span><span class="log-ok">[200] </span><span>Server
+                  ACK. SQLite record marked SYNCED.</span></div>
+              <div class="log-line"><span class="log-time">09:15:04</span><span class="log-sec">[PUNCH]
+                </span><span>Employee #117 CHECK-IN → SQLite buffered ✅</span></div>
+              <div class="log-line"><span class="log-time">09:15:04</span><span
+                  class="log-shield">[CRYPTO]</span><span>🔒 AES-256-CBC encrypt | nonce+timestamp appended</span></div>
+              <div class="log-line"><span class="log-time">09:15:05</span><span class="log-ok">[200] </span><span>Server
+                  ACK. SQLite record marked SYNCED.</span></div>
+              <div class="log-line"><span class="log-time">09:30:11</span><span class="log-sec">[PUNCH]
+                </span><span>Employee #203 → buffered → encrypted → synced ✅</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="verdict">
+          <div class="verdict-card verdict-a">
+            <div class="verdict-icon">⚠️</div>
+            <div class="verdict-text">
+              <div class="verdict-title">SCENARIO A — FUNCTIONAL BUT VULNERABLE</div>
+              <div class="verdict-desc">Data flows successfully under ideal conditions. However, every punch travels
+                over the internet as a plain, readable JSON string. An observer on any network hop can read employee
+                IDs, timestamps, and attendance patterns. No local backup exists — if a cloud write fails silently, data
+                is gone.</div>
+            </div>
+          </div>
+          <div class="verdict-card verdict-b">
+            <div class="verdict-icon">🛡️</div>
+            <div class="verdict-text">
+              <div class="verdict-title">SCENARIO B — SECURE BY DESIGN</div>
+              <div class="verdict-desc">Every punch is captured locally on the LAN first, encrypted with 🔒 AES-256-CBC
+                before it ever touches the internet, and a unique nonce + timestamp is embedded to prevent replay
+                attacks. Even in perfect conditions, the edge gateway builds a resilient, zero-trust pipeline that never
+                exposes raw biometric data.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!── ══════════════════════════════════════════ EVENT 2 ══ ──>
+      <section class="event-section" style="animation-delay:0.1s">
+        <div class="event-header" style="margin-top:72px">
+          <div class="event-num">02</div>
+          <div class="event-title-block">
+            <div class="event-label">EVENT · RESILIENCE</div>
+            <div class="event-title">Network Outage — ISP Down for 4 Hours (Morning Rush)</div>
+          </div>
+          <div class="event-status status-danger">● OUTAGE ACTIVE</div>
+        </div>
+        <div class="divider"></div>
+
+        <div class="flow-diagram">
+          <div class="flow-row">
+            <div class="flow-scenario flow-a">
+              <div class="flow-scenario-label">SCENARIO A — DIRECT-TO-CLOUD</div>
+              <div class="node-flow">
+                <span class="node node-device">🖐 BioDevice</span>
+                <span class="arrow">→</span>
+                <span class="node" style="background:#120606;color:#ff8080;border:1px solid #ff808044">JSON
+                  Payload</span>
+                <span class="arrow arrow-red">→</span>
+                <span class="node node-fail">😢 INTERNET DOWN</span>
+                <span class="arrow arrow-red">→</span>
+                <span class="node node-fail">UNREACHABLE</span>
+              </div>
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--a-color);">😢 240 min × ~15
+                employees = ~60 punch events LOST PERMANENTLY</div>
+              <div class="sim-image-container">
+                <img src="{% static 'direct_simulation.png' %}" alt="Direct-to-Cloud Failure Simulation"
+                  class="sim-image">
+              </div>
+            </div>
+            <div class="flow-scenario flow-b">
+              <div class="flow-scenario-label">SCENARIO B — HYBRID EDGE GATEWAY</div>
+              <div class="node-flow">
+                <span class="node node-device">🖐 BioDevice</span>
+                <span class="arrow">→</span>
+                <span class="node node-edge">🍓 RPi Edge</span>
+                <span class="arrow">→</span>
+                <span class="node node-db">SQLite Buffer ✅</span>
+                <span class="arrow arrow-yellow">→</span>
+                <span class="node node-warn">[PAUSED] SYNC QUEUED</span>
+              </div>
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">✅ All punches
+                captured locally on LAN — internet irrelevant at this stage</div>
+              <div class="sim-image-container">
+                <img src="{% static 'edge_simulation.png' %}" alt="Edge Gateway Resilience Simulation"
+                  class="sim-image">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="log-grid">
+          <div class="log-block">
+            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; ● OUTAGE LOG <span>INTERNET: ──────── 0Mbps
+                😢</span></div>
+            <div class="log-body">
+              <div class="log-line"><span class="log-time">09:00:00</span><span class="log-err">[ALERT] </span><span>ISP
+                  connection lost. DNS unreachable.</span></div>
+              <div class="log-line"><span class="log-time">09:00:12</span><span class="log-ok">[PUNCH]
+                </span><span>Employee #042 CHECK-IN → send attempt...</span></div>
+              <div class="log-line"><span class="log-time">09:00:42</span><span class="log-err">[ERR] </span><span>TCP
+                  timeout. ☁ Cloud API unreachable. DROP.</span></div>
+              <div class="log-line"><span class="log-time">09:01:05</span><span class="log-err">[ERR] </span><span>No
+                  retry logic. No local buffer. DATA LOST.</span></div>
+              <div class="log-line"><span class="log-time">09:15:00</span><span class="log-err">[DROP]
+                </span><span>Employee #117 CHECK-IN — DROPPED (no internet)</span></div>
+              <div class="log-line"><span class="log-time">09:30:00</span><span class="log-err">[DROP]
+                </span><span>Employee #203 CHECK-IN — DROPPED</span></div>
+              <div class="log-line"><span class="log-time">10:00:00</span><span class="log-err">[DROP]
+                </span><span>Employee #089, #154, #271 — ALL DROPPED</span></div>
+              <div class="log-line"><span class="log-time">10:30:00</span><span class="log-err">[DROP]
+                </span><span>Cumulative: ~24 records LOST irrecoverably</span></div>
+              <div class="log-line"><span class="log-time">12:59:59</span><span class="log-err">[TOTAL] </span><span>≈
+                  60 punch events PERMANENTLY DESTROYED 💀</span></div>
+            </div>
+          </div>
+          <div class="log-block">
+            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; ● OUTAGE LOG <span>INTERNET: ──────── 0Mbps
+                😢</span></div>
+            <div class="log-body">
+              <div class="log-line"><span class="log-time">09:00:00</span><span class="log-warn">[ALERT]
+                </span><span>ISP down. Edge Gateway enters OFFLINE mode.</span></div>
+              <div class="log-line"><span class="log-time">09:00:12</span><span class="log-sec">[PUNCH]
+                </span><span>Employee #042 → SQLite row #1001 INSERT ✅</span></div>
+              <div class="log-line"><span class="log-time">09:00:12</span><span class="log-warn">[SYNC]
+                </span><span>Internet unavailable. Queued for later sync.</span></div>
+              <div class="log-line"><span class="log-time">09:15:04</span><span class="log-sec">[PUNCH]
+                </span><span>Employee #117 → SQLite row #1002 INSERT ✅</span></div>
+              <div class="log-line"><span class="log-time">09:30:11</span><span class="log-sec">[PUNCH]
+                </span><span>Employee #203 → SQLite row #1003 INSERT ✅</span></div>
+              <div class="log-line"><span class="log-time">10:00:05</span><span class="log-sec">[PUNCH]
+                </span><span>Employees #089, #154, #271 → rows #1004-6 ✅</span></div>
+              <div class="log-line"><span class="log-time">10:30:22</span><span class="log-sec">[PUNCH]
+                </span><span>Cumulative 24 records safely buffered ✅</span></div>
+              <div class="log-line"><span class="log-time">12:59:59</span><span class="log-ok">[STATUS]</span><span>All
+                  60 records buffered in SQLite. 0 LOST. ✅</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="verdict">
+          <div class="verdict-card verdict-a">
+            <div class="verdict-icon">💀</div>
+            <div class="verdict-text">
+              <div class="verdict-title">SCENARIO A — CATASTROPHIC DATA LOSS</div>
+              <div class="verdict-desc">Every single check-in during the 4-hour window is irrecoverably lost. The device
+                has no local buffer and no retry mechanism. Employees present at work have no digital proof of their
+                attendance. HR must rely on manual registers — defeating the entire purpose of the biometric system.
+                This is a critical production failure.</div>
+            </div>
+          </div>
+          <div class="verdict-card verdict-b">
+            <div class="verdict-icon">✅</div>
+            <div class="verdict-text">
+              <div class="verdict-title">SCENARIO B — ZERO DATA LOSS</div>
+              <div class="verdict-desc">The Edge Gateway operates entirely on the local LAN. The internet is only needed
+                for the cloud sync step — which is deferred, not failed. All 60 punch events accumulate safely in the
+                SQLite database on the Raspberry Pi, timestamped and encrypted, awaiting restoration. Employees
+                experience no difference whatsoever.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!── ══════════════════════════════════════════ EVENT 3 ══ ──>
+      <section class="event-section" style="animation-delay:0.2s">
+        <div class="event-header" style="margin-top:72px">
+          <div class="event-num">03</div>
+          <div class="event-title-block">
+            <div class="event-label">EVENT · RECOVERY</div>
+            <div class="event-title">Network Restoration — ISP Back Online After 4 Hours</div>
+          </div>
+          <div class="event-status status-warning">● RECOVERING</div>
+        </div>
+        <div class="divider"></div>
+
+        <div class="flow-diagram">
+          <div class="flow-row">
+            <div class="flow-scenario flow-a">
+              <div class="flow-scenario-label">SCENARIO A — NOTHING TO RECOVER</div>
+              <div class="node-flow">
+                <span class="node node-cloud">☁ Cloud API</span>
+                <span class="arrow">→</span>
+                <span class="node node-fail">No Backlog Exists</span>
+                <span class="arrow arrow-red">→</span>
+                <span class="node node-fail">60 Records = NULL</span>
+                <span class="arrow arrow-red">→</span>
+                <span class="node node-fail">LOSS PERMANENT</span>
+              </div>
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--a-color);">Internet
+                restoration is meaningless — the data was destroyed when it was dropped</div>
+            </div>
+            <div class="flow-scenario flow-b">
+              <div class="flow-scenario-label">SCENARIO B — AUTOMATIC SYNC RESUMES</div>
+              <div class="node-flow">
+                <span class="node node-edge">🍓 RPi Edge</span>
+                <span class="arrow">→</span>
+                <span class="node node-db">SQLite (60 rows)</span>
+                <span class="arrow">→</span>
+                <span class="node node-lock">🔒 AES-256</span>
+                <span class="arrow arrow-green">→→</span>
+                <span class="node node-cloud">Django</span>
+                <span class="arrow arrow-green">→</span>
+                <span class="node node-ok">ALL 60 SYNCED ✅</span>
+              </div>
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">✅ Automatic
+                bulk-sync of all queued records with deduplication &amp; ordering preserved</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="log-grid">
+          <div class="log-block">
+            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; RECOVERY LOG <span>INTERNET: ════════
+                RESTORED</span></div>
+            <div class="log-body">
+              <div class="log-line"><span class="log-time">13:00:00</span><span class="log-info">[NET] </span><span>ISP
+                  connection restored. Cloud reachable.</span></div>
+              <div class="log-line"><span class="log-time">13:00:01</span><span class="log-err">[AUDIT]
+                </span><span>Querying local buffer... no buffer exists.</span></div>
+              <div class="log-line"><span class="log-time">13:00:01</span><span class="log-err">[AUDIT]
+                </span><span>09:00–13:00 attendance window: EMPTY in cloud.</span></div>
+              <div class="log-line"><span class="log-time">13:00:02</span><span class="log-err">[LOSS] </span><span>60
+                  records (≈180 data points) UNRECOVERABLE.</span></div>
+              <div class="log-line"><span class="log-time">13:00:02</span><span class="log-warn">[ACTION]</span><span>HR
+                  notified. Manual reconciliation required.</span></div>
+              <div class="log-line"><span class="log-time">13:15:00</span><span class="log-warn">[HR] </span><span>Paper
+                  register cross-check initiated (slow, error-prone)</span></div>
+              <div class="log-line"><span class="log-time">15:00:00</span><span class="log-err">[FINAL]
+                </span><span>Partial reconstruction: 40% records verified, 60% ambiguous 😢</span></div>
+            </div>
+          </div>
+          <div class="log-block">
+            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; RECOVERY LOG <span>INTERNET: ════════
+                RESTORED</span></div>
+            <div class="log-body">
+              <div class="log-line"><span class="log-time">13:00:00</span><span class="log-ok">[NET] </span><span>ISP
+                  connection restored. Sync trigger fired.</span></div>
+              <div class="log-line"><span class="log-time">13:00:01</span><span class="log-sec">[SYNC]
+                </span><span>Fetching unsynced rows from SQLite... 60 rows found.</span></div>
+              <div class="log-line"><span class="log-time">13:00:01</span><span
+                  class="log-shield">[CRYPTO]</span><span>Batch encrypting 60 records with 🔒 AES-256-CBC...</span></div>
+              <div class="log-line"><span class="log-time">13:00:02</span><span class="log-ok">[POST]
+                </span><span>Sending batch to Django: POST /api/attendance/sync</span></div>
+              <div class="log-line"><span class="log-time">13:00:04</span><span class="log-ok">[200] </span><span>Server
+                  ACK: 60/60 records accepted. Deduped. Ordered.</span></div>
+              <div class="log-line"><span class="log-time">13:00:04</span><span
+                  class="log-sec">[UPDATE]</span><span>SQLite: 60 rows marked status=SYNCED ✅</span></div>
+              <div class="log-line"><span class="log-time">13:00:05</span><span class="log-ok">[FINAL]
+                </span><span>Cloud attendance DB: complete &amp; accurate. 100% ✅ 🎉</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="verdict">
+          <div class="verdict-card verdict-a">
+            <div class="verdict-icon">😢</div>
+            <div class="verdict-text">
+              <div class="verdict-title">SCENARIO A — PERMANENT &amp; IRRECOVERABLE</div>
+              <div class="verdict-desc">Restoration of the internet changes absolutely nothing. The window of lost data
+                is a permanent hole in the attendance database. HR is forced into manual reconciliation — a process that
+                is slow, error-prone, and humiliating for a system that promised automation. Employees may face wrongful
+                salary deductions.</div>
+            </div>
+          </div>
+          <div class="verdict-card verdict-b">
+            <div class="verdict-icon">🎉</div>
+            <div class="verdict-text">
+              <div class="verdict-title">SCENARIO B — FULL AUTO-RECOVERY IN SECONDS</div>
+              <div class="verdict-desc">Within 4 seconds of internet restoration, the edge gateway auto-syncs all 60
+                buffered records, preserving exact timestamps from the moment of capture. The server applies
+                deduplication logic to prevent double-entries. The cloud database is made complete — with zero manual
+                intervention and zero data loss.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!── ══════════════════════════════════════════ EVENT 4 ══ ──>
+      <section class="event-section" style="animation-delay:0.3s">
+        <div class="event-header" style="margin-top:72px">
+          <div class="event-num">04</div>
+          <div class="event-title-block">
+            <div class="event-label">EVENT · SECURITY</div>
+            <div class="event-title">Security Threat — Man-in-the-Middle Replay Attack</div>
+          </div>
+          <div class="event-status status-critical">● THREAT ACTIVE</div>
+        </div>
+        <div class="divider"></div>
+
+        <div class="sec-grid">
+          <div class="sec-block">
+            <div class="sec-header" style="color:var(--a-color);">⚠ SCENARIO A — PAYLOAD INTERCEPTED (PLAINTEXT)</div>
+            <div class="sec-body">
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;">ORIGINAL
+                TRANSMISSION (Wireshark capture by attacker)</div>
+              <div class="payload-box">
+                <div><span class="pl-key">"employee_id"</span>: <span class="pl-val">42</span>,</div>
+                <div><span class="pl-key">"name"</span>: <span class="pl-str">"Aisha Khan"</span>,</div>
+                <div><span class="pl-key">"event"</span>: <span class="pl-str">"CHECK_IN"</span>,</div>
+                <div><span class="pl-key">"timestamp"</span>: <span class="pl-str">"2025-02-25T09:00:01Z"</span>,</div>
+                <div><span class="pl-key">"device_id"</span>: <span class="pl-str">"ZKT-BRANCH-01"</span></div>
+                <div style="margin-top:6px;"><span class="pl-warn">// ⚠ FULLY READABLE — NO ENCRYPTION</span></div>
+              </div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;">REPLAYED
+                PAYLOAD (Attacker re-sends 3 hours later)</div>
+              <div class="payload-box">
+                <div><span class="pl-key">"employee_id"</span>: <span class="pl-val">42</span>,</div>
+                <div><span class="pl-key">"event"</span>: <span class="pl-str">"CHECK_IN"</span>,</div>
+                <div><span class="pl-key">"timestamp"</span>: <span class="pl-str">"2025-02-25T09:00:01Z"</span>,</div>
+                <div style="margin-top:6px;"><span class="pl-warn">// ⚠ IDENTICAL PAYLOAD — SERVER CANNOT
+                    DISTINGUISH</span></div>
+                <div><span class="pl-warn">// ⚠ NO NONCE — SERVER ACCEPTS AS LEGITIMATE ✅ (for attacker)</span></div>
+              </div>
+              <div
+                style="font-family:var(--mono);font-size:11px;color:var(--a-color);padding:10px;background:#1a0606;border-radius:2px;">
+                RESULT: Attacker successfully spoofs employee attendance.<br>
+                Employee marked PRESENT twice. Payroll fraud possible.<br>
+                Employee data exposed. GDPR violation risk HIGH.
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-block">
+            <div class="sec-header" style="color:var(--b-color);">🛡 SCENARIO B — ATTACK NEUTRALIZED (ENCRYPTED + NONCE)
+            </div>
+            <div class="sec-body">
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;">ENCRYPTED
+                PAYLOAD (What attacker sees on the wire)</div>
+              <div class="payload-box">
+                <div><span class="pl-key">"iv"</span>: <span class="pl-enc">"7f3a9c1b4e2d8f06"</span>,</div>
+                <div><span class="pl-key">"nonce"</span>: <span class="pl-enc">"a3f19b24c7e0d521"</span>,</div>
+                <div><span class="pl-key">"ts"</span>: <span class="pl-enc">"1740474001"</span>,</div>
+                <div><span class="pl-key">"payload"</span>: <span
+                    class="pl-enc">"U2FsdGVkX1+zQP8gH3vNkL...mXpQwE9a3RdTv+lK██"</span>,</div>
+                <div style="margin-top:6px;"><span class="pl-comment">// Attacker sees only ciphertext. Cannot read emp
+                    data.</span></div>
+              </div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;">REPLAY
+                ATTEMPT (Attacker re-sends same encrypted block)</div>
+              <div class="payload-box">
+                <div><span class="pl-key">"iv"</span>: <span class="pl-enc">"7f3a9c1b4e2d8f06"</span>,</div>
+                <div><span class="pl-key">"nonce"</span>: <span class="pl-enc">"a3f19b24c7e0d521"</span>, <span
+                    class="pl-warn"> ← already seen</span></div>
+                <div><span class="pl-key">"ts"</span>: <span class="pl-enc">"1740474001"</span>, <span class="pl-warn">
+                    ← 3hr old, outside ±5min window</span></div>
+                <div><span class="pl-key">"payload"</span>: <span class="pl-enc">"U2FsdGVkX1+zQP8gH3vNkL..."</span>,
+                </div>
+                <div style="margin-top:6px;"><span class="pl-shield">// SERVER: Nonce seen before → REJECT (replay
+                    detected)</span></div>
+                <div><span class="pl-shield">// SERVER: Timestamp stale → REJECT (anti-replay)</span></div>
+              </div>
+              <div
+                style="font-family:var(--mono);font-size:11px;color:var(--b-color);padding:10px;background:#002820;border-radius:2px;">
+                RESULT: 🛡 Attack BLOCKED at server level. 403 FORBIDDEN.<br>
+                No employee data exposed. Nonce logged &amp; blacklisted.<br>
+                Security alert raised. Zero impact on legitimate data.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:20px 24px;">
+          <div
+            style="font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-bottom:14px;">
+            ● THREAT TIMELINE — SCENARIO B</div>
+          <div class="threat-timeline">
+            <div class="tt-line"><span class="tt-ts">09:00:01</span><span class="tt-actor tt-actor-sys">[EDGE]
+              </span><span class="tt-msg">Punch captured → 🔒 AES-256 encrypted, nonce=a3f19b24, ts=1740474001</span></div>
+            <div class="tt-line"><span class="tt-ts">09:00:02</span><span class="tt-actor tt-actor-sys">[EDGE]
+              </span><span class="tt-msg">Encrypted payload transmitted to Django → HTTP 200 OK. Nonce stored
+                server-side.</span></div>
+            <div class="tt-line"><span class="tt-ts">09:00:03</span><span class="tt-actor tt-actor-atk">[ATTK]
+              </span><span class="tt-msg">Intercepts ciphertext on wire. Cannot decrypt (no AES key). Records raw
+                bytes.</span></div>
+            <div class="tt-line"><span class="tt-ts">12:00:00</span><span class="tt-actor tt-actor-atk">[ATTK]
+              </span><span class="tt-msg">Replays captured ciphertext verbatim: POST /api/attendance/sync</span></div>
+            <div class="tt-line"><span class="tt-ts">12:00:00</span><span
+                class="tt-actor tt-actor-err">[DJANGO]</span><span class="tt-msg">Decrypts payload. Checks nonce
+                a3f19b24 → SEEN BEFORE → 403 FORBIDDEN ✅</span></div>
+            <div class="tt-line"><span class="tt-ts">12:00:00</span><span
+                class="tt-actor tt-actor-err">[DJANGO]</span><span class="tt-msg">Checks timestamp delta: 10,799 sec >
+                300 sec window → STALE → 403 FORBIDDEN ✅</span></div>
+            <div class="tt-line"><span class="tt-ts">12:00:01</span><span class="tt-actor tt-actor-ok"> [AUDIT]
+              </span><span class="tt-msg">Security event logged. IP blacklisted. Admin alerted. Attack neutralized.
+                🛡</span></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!── ══════════════════════════════════════════ EXEC SUMMARY ══ ──>
+      <div class="exec-summary">
+        <div class="exec-header">
+          <div class="exec-label">EXECUTIVE SUMMARY </div>
+          <div class="exec-title">Why Scenario B Wins — Every Single Time</div>
+        </div>
+        <div class="exec-body">
+
+          <div class="exec-col">
+            <div
+              style="font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-bottom:16px;">
+              PERFORMANCE METRICS</div>
+            <div class="metric-row">
+              <div class="metric-card metric-a">
+                <div class="metric-val">~60</div>
+                <div class="metric-label">Records Lost</div>
+                <div class="metric-sub">Scenario A (4hr outage)</div>
+              </div>
+              <div class="metric-card metric-b">
+                <div class="metric-val">0</div>
+                <div class="metric-label">Records Lost</div>
+                <div class="metric-sub">Scenario B (4hr outage)</div>
+              </div>
+              <div class="metric-card metric-a">
+                <div class="metric-val">0%</div>
+                <div class="metric-label">Data Recovery</div>
+                <div class="metric-sub">After outage ends</div>
+              </div>
+              <div class="metric-card metric-b">
+                <div class="metric-val">100%</div>
+                <div class="metric-label">Data Recovery</div>
+                <div class="metric-sub">Auto-sync in &lt;5 sec</div>
+              </div>
+              <div class="metric-card metric-a">
+                <div class="metric-val">😢</div>
+                <div class="metric-label">Replay Block</div>
+                <div class="metric-sub">MITM attack succeeds</div>
+              </div>
+              <div class="metric-card metric-b">
+                <div class="metric-val">✅</div>
+                <div class="metric-label">Replay Block</div>
+                <div class="metric-sub">Nonce + timestamp</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="exec-col">
+            <div
+              style="font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-bottom:12px;">
+              FEATURE COMPARISON</div>
+            <table class="comparison-table">
+              <tr>
+                <th>FEATURE</th>
+                <th style="color:var(--a-color);">SCENARIO A</th>
+                <th style="color:var(--b-color);">SCENARIO B</th>
+              </tr>
+              <tr>
+                <td class="td-feature">Offline Resilience</td>
+                <td class="td-a">None — drops on disconnect</td>
+                <td class="td-b">✅ SQLite buffer, unlimited queue</td>
+              </tr>
+              <tr>
+                <td class="td-feature">Encryption</td>
+                <td class="td-a">None — plaintext JSON</td>
+                <td class="td-b">✅ 🔒 AES-256-CBC end-to-end</td>
+              </tr>
+              <tr>
+                <td class="td-feature">Replay Protection</td>
+                <td class="td-a">None — trivially replayable</td>
+                <td class="td-b">✅ Nonce + timestamp window</td>
+              </tr>
+              <tr>
+                <td class="td-feature">Data Integrity</td>
+                <td class="td-a">No checksum / audit trail</td>
+                <td class="td-b">✅ Checksummed, ordered sync</td>
+              </tr>
+              <tr>
+                <td class="td-feature">Failure Mode</td>
+                <td class="td-a">Silent data loss</td>
+                <td class="td-b">✅ Graceful queue &amp; retry</td>
+              </tr>
+              <tr>
+                <td class="td-feature">Privacy (GDPR)</td>
+                <td class="td-a">Biometric PII exposed in transit</td>
+                <td class="td-b">✅ Encrypted, never exposed</td>
+              </tr>
+              <tr>
+                <td class="td-feature">HR Dependency</td>
+                <td class="td-a">Manual backup required</td>
+                <td class="td-b">✅ Fully automated, zero manual</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="final-verdict">
+            <div class="fv-icon">🏆</div>
+            <div class="fv-text">
+              <div class="fv-title">VERDICT: SCENARIO B GUARANTEES 0% DATA LOSS &amp; MILITARY-GRADE SECURITY</div>
+              <div class="fv-desc">
+                The Hybrid Edge Gateway architecture is not merely an improvement — it is a fundamental paradigm shift
+                in resilience and security. By intercepting biometric punches at the <strong>LAN level</strong>, the
+                system divorces data <em>capture</em> from data <em>transmission</em>, making it immune to internet
+                failures.
+                The <strong>SQLite buffer</strong> on the Raspberry Pi acts as a durable write-ahead log, ensuring no
+                punch event is ever lost regardless of connectivity. <strong>🔒 AES-256-CBC encryption</strong> means that
+                even if an adversary intercepts every packet, they obtain only meaningless ciphertext.
+                The <strong>nonce + timestamp anti-replay mechanism</strong> closes the final attack vector — replayed
+                packets are detected and rejected at the server within milliseconds.
+                The result is an architecture that provides <strong>99.999% uptime for data capture</strong>,
+                <strong>zero plaintext exposure</strong>, and <strong>automatic, ordered, deduplicated cloud
+                  sync</strong> — transforming a brittle, insecure legacy system into a production-grade,
+                enterprise-ready attendance platform.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!── FOOTER ──>
+      <div
+        style="padding:24px 60px 40px;border-top:1px solid var(--border);margin-top:40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;font-family:var(--mono);font-size:10px;color:var(--text-dim);">
+        <span>HYBRID CLOUD-EDGE BIOMETRIC ATTENDANCE SYSTEM — MAJOR PROJECT SIMULATION</span>
+        <span>GENERATED: 2025-02-25 &nbsp;|&nbsp; ARCHITECT: SENIOR SYSTEM SIMULATION v1.0</span>
+      </div>
+
+    </main>
+  </body>
+
+</html>

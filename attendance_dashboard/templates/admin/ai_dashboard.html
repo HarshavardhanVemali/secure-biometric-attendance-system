@@ -1,0 +1,149 @@
+{% extends "unfold/layouts/skeleton.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="px-4 py-8 md:px-8">
+    <div class="mb-8">
+        <div class="text-[8px] opacity-10 uppercase tracking-widest font-mono mb-2">Build: AI-Analytics-v1.0.1 (Custom
+            Override Active)</div>
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">AI Executive Insights</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Real-time attendance behavioral analysis and risk
+            distribution.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Success Score Chart -->
+        <div
+            class="md:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-6 flex justify-between">
+                INDIVIDUAL SUCCESS SCORES
+                <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded">0-100 RANGE</span>
+            </h3>
+            <canvas id="globalScoreChart" height="120"></canvas>
+        </div>
+
+        <!-- Risk Distribution Chart -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-6">RISK DISTRIBUTION</h3>
+            <div class="flex justify-center items-center h-48">
+                <canvas id="globalRiskChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Original Admin Content (Tables) -->
+    <div class="mt-8">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">System Components</h2>
+        {% include "unfold/helpers/messages.html" %}
+
+        <div class="grid grid-cols-1 gap-4">
+            {% if app_list %}
+            {% for app in app_list %}
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ app.name }}</h3>
+                </div>
+                <table class="w-full text-left text-sm">
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        {% for model in app.models %}
+                        <tr>
+                            <td class="px-4 py-3">
+                                {% if model.admin_url %}
+                                <a href="{{ model.admin_url }}"
+                                    class="text-primary-600 hover:underline font-medium">{{ model.name }}</a>
+                                {% else %}
+                                {{ model.name }}
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                {% if model.add_url %}
+                                <a href="{{ model.add_url }}"
+                                    class="text-gray-400 hover:text-gray-600">{% trans 'Add' %}</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("Admin Dashboard JS initialized...");
+        fetch('/api/v1/dashboard/stats/')
+            .then(response => {
+                if (!response.ok) throw new Error("Dashboard API returned " + response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Dashboard Data received:", data);
+                const labels = data.labels || [];
+                const scores = data.scores || [];
+                const riskCounts = data.risk_counts || [0, 0, 0];
+
+                if (labels.length === 0) {
+                    console.warn("No analytics data found for charts.");
+                    return;
+                }
+
+                // Score Chart
+                const scoreCtx = document.getElementById('globalScoreChart');
+                if (scoreCtx) {
+                    new Chart(scoreCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Success Score',
+                                data: scores,
+                                backgroundColor: scores.map(s => s > 70 ? '#10b981' : (s > 40 ? '#f59e0b' : '#ef4444')),
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+
+                // Risk Chart
+                const riskCtx = document.getElementById('globalRiskChart');
+                if (riskCtx) {
+                    new Chart(riskCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                            datasets: [{
+                                data: riskCounts,
+                                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20 } }
+                            },
+                            cutout: '75%'
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Dashboard Chart Error:", err);
+            });
+    });
+</script>
+{% endblock %}

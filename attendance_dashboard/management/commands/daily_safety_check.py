@@ -1,0 +1,193 @@
+import os
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+from django.conf import settings
+from django.core.mail import send_mail
+from attendance_dashboard.models import Employee, AttendanceLog, AlertSettings, NotificationLog
+
+class Command(BaseCommand):
+    help = 'Identifies absent employees at the configured alert time and sends email alerts via AWS SES'
+
+    def handle(self, *args, **options):
+        self.stdout.write("Running morning safety check (Absence Analysis)...")
+        
+        # 0. Fetch Alert Settings
+        config = AlertSettings.objects.first()
+        if not config:
+            # Fallback/Default if no settings exist yet
+            config = AlertSettings.objects.create(is_enabled=True)
+            self.stdout.write(self.style.WARNING("No AlertSettings found. Created default configuration."))
+
+        if not config.is_enabled:
+            self.stdout.write(self.style.WARNING("Automated alerts are currently DISABLED in AlertSettings."))
+            return
+
+        today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        current_date_str = timezone.now().strftime('%Y-%m-%d')
+        alert_time_str = config.alert_time.strftime('%I:%M %p')
+
+        # 1. Get all active employees
+        employees = Employee.objects.all()
+        absent_employees = []
+        emails_sent_this_batch = 0
+
+        for emp in employees:
+            # Check if they have any punch since midnight today
+            has_checked_in = AttendanceLog.objects.filter(
+                employee=emp,
+                timestamp__gte=today,
+                punch_type="Check-in"
+            ).exists()
+
+            if not has_checked_in:
+                risk_level = "LOW"
+                if hasattr(emp, 'analytics'):
+                    risk_level = emp.analytics.risk_level
+                
+                absent_employees.append({
+                    "name": f"{emp.first_name} {emp.last_name}",
+                    "id": emp.biometric_id,
+                    "risk_level": risk_level,
+                    "parent_phone": emp.parent_phone or "Not Provided",
+                    "parent_email": emp.parent_email,
+                    "faculty_email": emp.faculty_email,
+                    "student_email": emp.email
+                })
+
+                # 2. Build recipient list
+                recipient_list = []
+                if emp.parent_email: recipient_list.append(emp.parent_email)
+                if emp.email: recipient_list.append(emp.email)
+                if emp.faculty_email: recipient_list.append(emp.faculty_email)
+
+                # 3. Send Email via AWS SES if we have recipients
+                if recipient_list:
+                    try:
+                        # Dynamic rendering of templates
+                        context = {
+                            "first_name": emp.first_name,
+                            "last_name": emp.last_name,
+                            "biometric_id": emp.biometric_id,
+                            "date": current_date_str,
+                            "alert_time": alert_time_str
+                        }
+                        
+                        subject = config.email_subject_template.format(**context)
+                        plain_message = config.email_message_template.format(**context)
+                        
+                        # Build Risk Color
+                        risk_color = "#00d4aa" # LOW
+                        if risk_level == "MEDIUM": risk_color = "#f0b429"
+                        elif risk_level == "HIGH": risk_color = "#ff4757"
+
+                        html_message = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Absence Alert</title>
+                        </head>
+                        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; padding: 20px; color: #1f2937;">
+                            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                <div style="background-color: #111827; padding: 24px; text-align: center;">
+                                    <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">SECURITY NOTIFICATION</h1>
+                                </div>
+                                <div style="padding: 32px 24px;">
+                                    <p style="font-size: 16px; line-height: 1.6; margin-top: 0;">Dear Parent & Faculty,</p>
+                                    <p style="font-size: 16px; line-height: 1.6;">This is an automated safety alert generated by the Campus AI System.</p>
+                                    
+                                    <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;">
+                                        <p style="margin: 0 0 12px 0; font-size: 15px;"><strong>Student:</strong> {emp.first_name} {emp.last_name}</p>
+                                        <p style="margin: 0 0 12px 0; font-size: 15px;"><strong>ID:</strong> {emp.biometric_id}</p>
+                                        <p style="margin: 0 0 12px 0; font-size: 15px;"><strong>Date:</strong> {current_date_str}</p>
+                                        <p style="margin: 0 0 12px 0; font-size: 15px;"><strong>Time:</strong> {alert_time_str}</p>
+                                        <p style="margin: 0; font-size: 15px; display: flex; align-items: center;">
+                                            <strong>AI Risk Assessment:</strong> 
+                                            <span style="display: inline-block; background-color: {risk_color}20; color: {risk_color}; padding: 4px 12px; border-radius: 9999px; font-size: 14px; font-weight: 700; margin-left: 8px;">
+                                                {risk_level}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    
+                                    <p style="font-size: 16px; line-height: 1.6;">The individual mentioned above has <strong>not checked in</strong> to the facility as of the designated threshold time. Please verify their whereabouts and safety immediately.</p>
+                                    
+                                    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 0;">Best Regards,<br><strong style="color: #4f46e5;">Campus Security & Attendance Team</strong></p>
+                                </div>
+                                <div style="background-color: #f3f4f6; padding: 16px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                                    This email was generated automatically by the AI Biometric System. Please do not reply directly.
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """
+                        
+                        send_mail(
+                            subject,
+                            plain_message,
+                            settings.AWS_SES_FROM_EMAIL,
+                            recipient_list,
+                            fail_silently=False,
+                            html_message=html_message
+                        )
+                        self.stdout.write(self.style.SUCCESS(f"Email sent to recipients: {', '.join(recipient_list)}"))
+                        emails_sent_this_batch += len(recipient_list)
+                        
+                        # Log successes
+                        if emp.parent_email:
+                            NotificationLog.objects.create(employee=emp, recipient_email=emp.parent_email, recipient_type="Parent", subject=subject, status="Sent")
+                        if emp.email:
+                            NotificationLog.objects.create(employee=emp, recipient_email=emp.email, recipient_type="Student", subject=subject, status="Sent")
+                        if emp.faculty_email:
+                            NotificationLog.objects.create(employee=emp, recipient_email=emp.faculty_email, recipient_type="Faculty", subject=subject, status="Sent")
+
+                    except Exception as e:
+                        self.stdout.write(self.style.ERROR(f"Failed to send email to {recipient_list}: {e}"))
+                        # Log failures
+                        if emp.parent_email:
+                            NotificationLog.objects.create(employee=emp, recipient_email=emp.parent_email, recipient_type="Parent", subject=subject, status="Failed", error_message=str(e))
+                        if emp.email:
+                            NotificationLog.objects.create(employee=emp, recipient_email=emp.email, recipient_type="Student", subject=subject, status="Failed", error_message=str(e))
+                        if emp.faculty_email:
+                            NotificationLog.objects.create(employee=emp, recipient_email=emp.faculty_email, recipient_type="Faculty", subject=subject, status="Failed", error_message=str(e))
+
+
+        # 3. Update EMAIL_SENT_COUNT in .env
+        if emails_sent_this_batch > 0:
+            self.update_env_counter(emails_sent_this_batch)
+
+        if not absent_employees:
+            self.stdout.write("No absentees found. All clear.")
+
+    def update_env_counter(self, count):
+        env_path = os.path.join(settings.BASE_DIR, '.env')
+        if not os.path.exists(env_path):
+            self.stdout.write(self.style.WARNING(".env file not found for counter update."))
+            return
+
+        with open(env_path, 'r') as f:
+            lines = f.readlines()
+
+        updated = False
+        new_lines = []
+        current_total = 0
+
+        for line in lines:
+            if line.startswith('EMAIL_SENT_COUNT='):
+                try:
+                    current_total = int(line.split('=')[1].strip())
+                    new_total = current_total + count
+                    new_lines.append(f"EMAIL_SENT_COUNT={new_total}\n")
+                    self.stdout.write(self.style.SUCCESS(f"Updated .env counter: {current_total} -> {new_total}"))
+                    updated = True
+                except ValueError:
+                    new_lines.append(line)
+            else:
+                new_lines.append(line)
+
+        if not updated:
+            new_lines.append(f"EMAIL_SENT_COUNT={count}\n")
+            self.stdout.write(self.style.SUCCESS(f"Added EMAIL_SENT_COUNT={count} to .env"))
+
+        with open(env_path, 'w') as f:
+            f.writelines(new_lines)

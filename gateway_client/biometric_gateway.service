@@ -1,0 +1,17 @@
+[Unit]
+Description=Secure Biometric Gateway Service
+After=network.target
+
+[Service]
+Type=simple
+User=harsha
+WorkingDirectory=/home/harsha/biometric_gateway
+ExecStart=/home/harsha/biometric_gateway/venv/bin/python main.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=biometric_gateway
+
+[Install]
+WantedBy=multi-user.target
