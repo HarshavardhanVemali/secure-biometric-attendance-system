@@ -5,7 +5,6 @@ The device sends data to the local gateway. The gateway buffers it securely.
 Even if the internet is down, the data is safe. When the internet returns, it syncs encrypted data to the cloud.
 """
 import time
-import json
 import os
 from datetime import datetime
 
@@ -15,8 +14,8 @@ from dotenv import load_dotenv
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 sys.path.append(os.path.join(BASE_DIR, 'gateway_client'))
-from buffer_manager import OfflineBuffer
-from sync_client import SecureSyncClient
+from buffer_manager import OfflineBuffer # noqa: E402
+from sync_client import SecureSyncClient # noqa: E402
 
 def run_gateway_simulation():
     print("-" * 50)

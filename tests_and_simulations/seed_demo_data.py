@@ -1,18 +1,17 @@
 import os
 import django
 import random
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 
 import sys
 # Setup Django environment
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
-import django
 django.setup()
 
-from attendance_dashboard.models import Employee, AttendanceLog, BiometricMachine, GatewayDevice
-from attendance_dashboard.analytics_engine import calculate_performance_score
+from attendance_dashboard.models import Employee, AttendanceLog, BiometricMachine, GatewayDevice # noqa: E402
+from attendance_dashboard.analytics_engine import calculate_performance_score # noqa: E402
 
 def seed_data():
     print("Seed started... Cleaning existing data...")
@@ -67,10 +66,12 @@ def seed_data():
             elif data["type"] == "late":
                 punch_time_offset = random.randint(6, 20) # 9:06 to 9:20
             elif data["type"] == "irregular":
-                if random.random() < 0.3: skip_day = True
+                if random.random() < 0.3: 
+                    skip_day = True
                 punch_time_offset = random.randint(-10, 30)
             elif data["type"] == "absentee":
-                if random.random() < 0.6: skip_day = True
+                if random.random() < 0.6: 
+                    skip_day = True
                 punch_time_offset = random.randint(10, 60)
 
             if not skip_day:

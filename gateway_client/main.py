@@ -1,3 +1,6 @@
+import time
+import threading
+import schedule
 import os
 from flask import Flask, request
 from dotenv import load_dotenv
@@ -138,12 +141,9 @@ def schedule_runner():
         schedule.run_pending()
         time.sleep(1)
 
-import time
-import threading
-import schedule
 
 if __name__ == "__main__":
-    print(f"Starting Secure Biometric Gateway Service...")
+    print("Starting Secure Biometric Gateway Service...")
     print(f"Gateway MAC: {GATEWAY_MAC}")
     print(f"Server URL: {DJANGO_SERVER_URL}")
     print(f"Listening for eSSL ADMS Pushes on port {FLASK_PORT} (/iclock/cdata.aspx)...")

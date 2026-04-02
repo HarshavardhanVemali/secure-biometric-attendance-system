@@ -11,7 +11,7 @@ from django.urls import reverse
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from rest_framework.test import APIClient
-from .models import GatewayDevice, GatewaySession, BiometricMachine, Employee
+from .models import GatewayDevice, GatewaySession
 
 class CryptographyTestCase(TestCase):
     def setUp(self):

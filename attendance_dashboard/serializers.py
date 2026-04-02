@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from .models import AttendanceLog
 
 class EncryptedPayloadSerializer(serializers.Serializer):
     mac_address = serializers.CharField(max_length=17, required=True, help_text="MAC address of the Gateway Device")

@@ -2,7 +2,6 @@ from celery import shared_task
 from django.core.management import call_command
 from django_celery_beat.models import PeriodicTask, CrontabSchedule, IntervalSchedule, ClockedSchedule, SolarSchedule
 import logging
-import json
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)

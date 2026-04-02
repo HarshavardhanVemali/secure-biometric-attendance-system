@@ -56,9 +56,12 @@ class Command(BaseCommand):
 
                 # 2. Build recipient list
                 recipient_list = []
-                if emp.parent_email: recipient_list.append(emp.parent_email)
-                if emp.email: recipient_list.append(emp.email)
-                if emp.faculty_email: recipient_list.append(emp.faculty_email)
+                if emp.parent_email: 
+                    recipient_list.append(emp.parent_email)
+                if emp.email: 
+                    recipient_list.append(emp.email)
+                if emp.faculty_email: 
+                    recipient_list.append(emp.faculty_email)
 
                 # 3. Send Email via AWS SES if we have recipients
                 if recipient_list:
@@ -77,8 +80,10 @@ class Command(BaseCommand):
                         
                         # Build Risk Color
                         risk_color = "#00d4aa" # LOW
-                        if risk_level == "MEDIUM": risk_color = "#f0b429"
-                        elif risk_level == "HIGH": risk_color = "#ff4757"
+                        if risk_level == "MEDIUM": 
+                            risk_color = "#f0b429"
+                        elif risk_level == "HIGH": 
+                            risk_color = "#ff4757"
 
                         html_message = f"""
                         <!DOCTYPE html>
