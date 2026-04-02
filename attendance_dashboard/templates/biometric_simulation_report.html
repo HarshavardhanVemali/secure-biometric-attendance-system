@@ -4,25 +4,25 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hybrid Cloud-Edge Secure Biometric Attendance System — Simulation Report</title>
+    <title>Hybrid Cloud-Edge Biometric Attendance System — Simulation Report</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap"
       rel="stylesheet">
     <style>
       :root {
-        ──bg: #080c10;
-        ──surface: #0d1117;
-        ──border: #1e2d3d;
-        ──a-color: #ff4757;
-        ──a-dim: #3d1520;
-        ──b-color: #00d4aa;
-        ──b-dim: #002d25;
-        ──accent: #f0b429;
-        ──text: #c9d1d9;
-        ──text-dim: #586069;
-        ──mono: 'Share Tech Mono', monospace;
-        ──sans: 'Barlow', sans-serif;
-        ──cond: 'Barlow Condensed', sans-serif;
+        --bg: #080c10;
+        --surface: #0d1117;
+        --border: #1e2d3d;
+        --a-color: #ff4757;
+        --a-dim: #3d1520;
+        --b-color: #00d4aa;
+        --b-dim: #002d25;
+        --accent: #f0b429;
+        --text: #c9d1d9;
+        --text-dim: #586069;
+        --mono: 'Share Tech Mono', monospace;
+        --sans: 'Barlow', sans-serif;
+        --cond: 'Barlow Condensed', sans-serif;
       }
 
       * {
@@ -101,7 +101,7 @@
       }
 
       .header-meta span::before {
-        content: '';
+        content: '▸ ';
         color: var(--accent);
       }
 
@@ -1116,10 +1116,10 @@
 
   <body>
 
-    <!── HEADER ──>
+    <!-- HEADER -->
     <header>
       <div class="header-tag">▸ ARCHITECTURAL SIMULATION REPORT ◂</div>
-      <h1>Hybrid Cloud-Edge<br><span>Secure Biometric Attendance System</span></h1>
+      <h1>Hybrid Cloud-Edge<br><span>Biometric Attendance System</span></h1>
       <div class="header-meta">
         <span>SIM DATE: 2025-02-25</span>
         <span>REPORT VERSION: 1.0.0</span>
@@ -1129,7 +1129,7 @@
       </div>
     </header>
 
-    <!── LEGEND ──>
+    <!-- LEGEND -->
     <div class="legend">
       <div class="leg leg-a">
         <div class="leg-dot"></div> SCENARIO A — TRADITIONAL: DIRECT-TO-CLOUD
@@ -1141,7 +1141,7 @@
 
     <main>
 
-      <!── ══════════════════════════════════════════ EVENT 1 ══ ──>
+      <!-- ══════════════════════════════════════════ EVENT 1 ══ -->
       <section class="event-section">
         <div class="event-header">
           <div class="event-num">01</div>
@@ -1158,14 +1158,14 @@
             <div class="flow-scenario flow-a">
               <div class="flow-scenario-label">SCENARIO A — DIRECT-TO-CLOUD</div>
               <div class="node-flow">
-                <span class="node node-device">🖐 BioDevice</span>
+                <span class="node node-device">BioDevice</span>
                 <span class="arrow">→</span>
                 <span class="node" style="background:#120606;color:#ff8080;border:1px solid #ff808044">Unencrypted
                   JSON</span>
                 <span class="arrow arrow-red">→→</span>
-                <span class="node node-cloud">☁ Cloud API</span>
+                <span class="node node-cloud">Cloud API</span>
                 <span class="arrow arrow-green">→</span>
-                <span class="node node-db">DB ✅</span>
+                <span class="node node-db">DB [OK]</span>
               </div>
               <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:#ff8080;">⚠ No encryption in
                 transit &nbsp;|&nbsp; No buffering &nbsp;|&nbsp; Works only with live internet</div>
@@ -1173,18 +1173,18 @@
             <div class="flow-scenario flow-b">
               <div class="flow-scenario-label">SCENARIO B — HYBRID EDGE GATEWAY</div>
               <div class="node-flow">
-                <span class="node node-device">🖐 BioDevice</span>
+                <span class="node node-device">BioDevice</span>
                 <span class="arrow">→</span>
-                <span class="node node-edge">🍓 RPi Edge</span>
+                <span class="node node-edge">RPi Edge</span>
                 <span class="arrow">→</span>
-                <span class="node node-lock">🔒 AES-256</span>
+                <span class="node node-lock">AES-256</span>
                 <span class="arrow arrow-green">→→</span>
                 <span class="node node-cloud">Django</span>
                 <span class="arrow arrow-green">→</span>
-                <span class="node node-db">DB ✅</span>
+                <span class="node node-db">DB [OK]</span>
               </div>
-              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">✅ LAN-local
-                capture &nbsp;|&nbsp; 🔒 AES-256-CBC encrypted &nbsp;|&nbsp; Timestamped &nbsp;|&nbsp; Buffered in SQLite
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">[OK] LAN-local
+                capture &nbsp;|&nbsp; AES-256-CBC encrypted &nbsp;|&nbsp; Timestamped &nbsp;|&nbsp; Buffered in SQLite
               </div>
             </div>
           </div>
@@ -1192,7 +1192,7 @@
 
         <div class="log-grid">
           <div class="log-block">
-            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; SYSTEM LOG <span>INTERNET: ════════
+            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; SYSTEM LOG <span>INTERNET: ████████
                 100Mbps</span></div>
             <div class="log-body">
               <div class="log-line"><span class="log-time">09:00:01</span><span class="log-ok">[PUNCH]
@@ -1209,37 +1209,37 @@
                   acknowledged. Record saved.</span></div>
               <div class="log-line"><span class="log-time">09:30:11</span><span class="log-ok">[PUNCH]
                 </span><span>Employee #203 CHECK-IN received → saved.</span></div>
-              <div class="log-line"><span class="log-time">──:──:──</span><span class="log-err">[NOTE] </span><span>No
+              <div class="log-line"><span class="log-time">--:--:--</span><span class="log-err">[NOTE] </span><span>No
                   local copy retained. Memory cleared.</span></div>
             </div>
           </div>
           <div class="log-block">
-            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; SYSTEM LOG <span>INTERNET: ════════
+            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; SYSTEM LOG <span>INTERNET: ████████
                 100Mbps</span></div>
             <div class="log-body">
               <div class="log-line"><span class="log-time">09:00:01</span><span class="log-sec">[PUNCH]
-                </span><span>Employee #042 CHECK-IN → SQLite buffered ✅</span></div>
+                </span><span>Employee #042 CHECK-IN → SQLite buffered [OK]</span></div>
               <div class="log-line"><span class="log-time">09:00:01</span><span
-                  class="log-shield">[CRYPTO]</span><span>🔒 AES-256-CBC encrypt | nonce+timestamp appended</span></div>
+                  class="log-shield">[CRYPTO]</span><span>AES-256-CBC encrypt | nonce+timestamp appended</span></div>
               <div class="log-line"><span class="log-time">09:00:02</span><span class="log-ok">[SYNC]
                 </span><span>Encrypted payload → Django server</span></div>
               <div class="log-line"><span class="log-time">09:00:02</span><span class="log-ok">[200] </span><span>Server
                   ACK. SQLite record marked SYNCED.</span></div>
               <div class="log-line"><span class="log-time">09:15:04</span><span class="log-sec">[PUNCH]
-                </span><span>Employee #117 CHECK-IN → SQLite buffered ✅</span></div>
+                </span><span>Employee #117 CHECK-IN → SQLite buffered [OK]</span></div>
               <div class="log-line"><span class="log-time">09:15:04</span><span
-                  class="log-shield">[CRYPTO]</span><span>🔒 AES-256-CBC encrypt | nonce+timestamp appended</span></div>
+                  class="log-shield">[CRYPTO]</span><span>AES-256-CBC encrypt | nonce+timestamp appended</span></div>
               <div class="log-line"><span class="log-time">09:15:05</span><span class="log-ok">[200] </span><span>Server
                   ACK. SQLite record marked SYNCED.</span></div>
               <div class="log-line"><span class="log-time">09:30:11</span><span class="log-sec">[PUNCH]
-                </span><span>Employee #203 → buffered → encrypted → synced ✅</span></div>
+                </span><span>Employee #203 → buffered → encrypted → synced [OK]</span></div>
             </div>
           </div>
         </div>
 
         <div class="verdict">
           <div class="verdict-card verdict-a">
-            <div class="verdict-icon">⚠️</div>
+            <div class="verdict-icon">[WARNING]</div>
             <div class="verdict-text">
               <div class="verdict-title">SCENARIO A — FUNCTIONAL BUT VULNERABLE</div>
               <div class="verdict-desc">Data flows successfully under ideal conditions. However, every punch travels
@@ -1249,10 +1249,10 @@
             </div>
           </div>
           <div class="verdict-card verdict-b">
-            <div class="verdict-icon">🛡️</div>
+            <div class="verdict-icon">[PROTECTED]</div>
             <div class="verdict-text">
               <div class="verdict-title">SCENARIO B — SECURE BY DESIGN</div>
-              <div class="verdict-desc">Every punch is captured locally on the LAN first, encrypted with 🔒 AES-256-CBC
+              <div class="verdict-desc">Every punch is captured locally on the LAN first, encrypted with AES-256-CBC
                 before it ever touches the internet, and a unique nonce + timestamp is embedded to prevent replay
                 attacks. Even in perfect conditions, the edge gateway builds a resilient, zero-trust pipeline that never
                 exposes raw biometric data.</div>
@@ -1262,7 +1262,7 @@
       </section>
 
 
-      <!── ══════════════════════════════════════════ EVENT 2 ══ ──>
+      <!-- ══════════════════════════════════════════ EVENT 2 ══ -->
       <section class="event-section" style="animation-delay:0.1s">
         <div class="event-header" style="margin-top:72px">
           <div class="event-num">02</div>
@@ -1279,16 +1279,16 @@
             <div class="flow-scenario flow-a">
               <div class="flow-scenario-label">SCENARIO A — DIRECT-TO-CLOUD</div>
               <div class="node-flow">
-                <span class="node node-device">🖐 BioDevice</span>
+                <span class="node node-device">BioDevice</span>
                 <span class="arrow">→</span>
                 <span class="node" style="background:#120606;color:#ff8080;border:1px solid #ff808044">JSON
                   Payload</span>
                 <span class="arrow arrow-red">→</span>
-                <span class="node node-fail">😢 INTERNET DOWN</span>
+                <span class="node node-fail">[FAIL] INTERNET DOWN</span>
                 <span class="arrow arrow-red">→</span>
                 <span class="node node-fail">UNREACHABLE</span>
               </div>
-              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--a-color);">😢 240 min × ~15
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--a-color);">[FAIL] 240 min × ~15
                 employees = ~60 punch events LOST PERMANENTLY</div>
               <div class="sim-image-container">
                 <img src="{% static 'direct_simulation.png' %}" alt="Direct-to-Cloud Failure Simulation"
@@ -1298,15 +1298,15 @@
             <div class="flow-scenario flow-b">
               <div class="flow-scenario-label">SCENARIO B — HYBRID EDGE GATEWAY</div>
               <div class="node-flow">
-                <span class="node node-device">🖐 BioDevice</span>
+                <span class="node node-device">BioDevice</span>
                 <span class="arrow">→</span>
-                <span class="node node-edge">🍓 RPi Edge</span>
+                <span class="node node-edge">RPi Edge</span>
                 <span class="arrow">→</span>
-                <span class="node node-db">SQLite Buffer ✅</span>
+                <span class="node node-db">SQLite Buffer [OK]</span>
                 <span class="arrow arrow-yellow">→</span>
-                <span class="node node-warn">[PAUSED] SYNC QUEUED</span>
+                <span class="node node-warn">⏸ SYNC QUEUED</span>
               </div>
-              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">✅ All punches
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">[OK] All punches
                 captured locally on LAN — internet irrelevant at this stage</div>
               <div class="sim-image-container">
                 <img src="{% static 'edge_simulation.png' %}" alt="Edge Gateway Resilience Simulation"
@@ -1318,15 +1318,15 @@
 
         <div class="log-grid">
           <div class="log-block">
-            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; ● OUTAGE LOG <span>INTERNET: ──────── 0Mbps
-                😢</span></div>
+            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; OUTAGE LOG <span>INTERNET: ░░░░░░░░ 0Mbps
+                [FAIL]</span></div>
             <div class="log-body">
               <div class="log-line"><span class="log-time">09:00:00</span><span class="log-err">[ALERT] </span><span>ISP
                   connection lost. DNS unreachable.</span></div>
               <div class="log-line"><span class="log-time">09:00:12</span><span class="log-ok">[PUNCH]
                 </span><span>Employee #042 CHECK-IN → send attempt...</span></div>
               <div class="log-line"><span class="log-time">09:00:42</span><span class="log-err">[ERR] </span><span>TCP
-                  timeout. ☁ Cloud API unreachable. DROP.</span></div>
+                  timeout. Cloud API unreachable. DROP.</span></div>
               <div class="log-line"><span class="log-time">09:01:05</span><span class="log-err">[ERR] </span><span>No
                   retry logic. No local buffer. DATA LOST.</span></div>
               <div class="log-line"><span class="log-time">09:15:00</span><span class="log-err">[DROP]
@@ -1338,36 +1338,36 @@
               <div class="log-line"><span class="log-time">10:30:00</span><span class="log-err">[DROP]
                 </span><span>Cumulative: ~24 records LOST irrecoverably</span></div>
               <div class="log-line"><span class="log-time">12:59:59</span><span class="log-err">[TOTAL] </span><span>≈
-                  60 punch events PERMANENTLY DESTROYED 💀</span></div>
+                  60 punch events PERMANENTLY DESTROYED [DATA LOSS]</span></div>
             </div>
           </div>
           <div class="log-block">
-            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; ● OUTAGE LOG <span>INTERNET: ──────── 0Mbps
-                😢</span></div>
+            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; OUTAGE LOG <span>INTERNET: ░░░░░░░░ 0Mbps
+                [FAIL]</span></div>
             <div class="log-body">
               <div class="log-line"><span class="log-time">09:00:00</span><span class="log-warn">[ALERT]
                 </span><span>ISP down. Edge Gateway enters OFFLINE mode.</span></div>
               <div class="log-line"><span class="log-time">09:00:12</span><span class="log-sec">[PUNCH]
-                </span><span>Employee #042 → SQLite row #1001 INSERT ✅</span></div>
+                </span><span>Employee #042 → SQLite row #1001 INSERT [OK]</span></div>
               <div class="log-line"><span class="log-time">09:00:12</span><span class="log-warn">[SYNC]
                 </span><span>Internet unavailable. Queued for later sync.</span></div>
               <div class="log-line"><span class="log-time">09:15:04</span><span class="log-sec">[PUNCH]
-                </span><span>Employee #117 → SQLite row #1002 INSERT ✅</span></div>
+                </span><span>Employee #117 → SQLite row #1002 INSERT [OK]</span></div>
               <div class="log-line"><span class="log-time">09:30:11</span><span class="log-sec">[PUNCH]
-                </span><span>Employee #203 → SQLite row #1003 INSERT ✅</span></div>
+                </span><span>Employee #203 → SQLite row #1003 INSERT [OK]</span></div>
               <div class="log-line"><span class="log-time">10:00:05</span><span class="log-sec">[PUNCH]
-                </span><span>Employees #089, #154, #271 → rows #1004-6 ✅</span></div>
+                </span><span>Employees #089, #154, #271 → rows #1004-6 [OK]</span></div>
               <div class="log-line"><span class="log-time">10:30:22</span><span class="log-sec">[PUNCH]
-                </span><span>Cumulative 24 records safely buffered ✅</span></div>
+                </span><span>Cumulative 24 records safely buffered [OK]</span></div>
               <div class="log-line"><span class="log-time">12:59:59</span><span class="log-ok">[STATUS]</span><span>All
-                  60 records buffered in SQLite. 0 LOST. ✅</span></div>
+                  60 records buffered in SQLite. 0 LOST. [OK]</span></div>
             </div>
           </div>
         </div>
 
         <div class="verdict">
           <div class="verdict-card verdict-a">
-            <div class="verdict-icon">💀</div>
+            <div class="verdict-icon">[DATA LOSS]</div>
             <div class="verdict-text">
               <div class="verdict-title">SCENARIO A — CATASTROPHIC DATA LOSS</div>
               <div class="verdict-desc">Every single check-in during the 4-hour window is irrecoverably lost. The device
@@ -1377,7 +1377,7 @@
             </div>
           </div>
           <div class="verdict-card verdict-b">
-            <div class="verdict-icon">✅</div>
+            <div class="verdict-icon">[OK]</div>
             <div class="verdict-text">
               <div class="verdict-title">SCENARIO B — ZERO DATA LOSS</div>
               <div class="verdict-desc">The Edge Gateway operates entirely on the local LAN. The internet is only needed
@@ -1390,7 +1390,7 @@
       </section>
 
 
-      <!── ══════════════════════════════════════════ EVENT 3 ══ ──>
+      <!-- ══════════════════════════════════════════ EVENT 3 ══ -->
       <section class="event-section" style="animation-delay:0.2s">
         <div class="event-header" style="margin-top:72px">
           <div class="event-num">03</div>
@@ -1407,7 +1407,7 @@
             <div class="flow-scenario flow-a">
               <div class="flow-scenario-label">SCENARIO A — NOTHING TO RECOVER</div>
               <div class="node-flow">
-                <span class="node node-cloud">☁ Cloud API</span>
+                <span class="node node-cloud">Cloud API</span>
                 <span class="arrow">→</span>
                 <span class="node node-fail">No Backlog Exists</span>
                 <span class="arrow arrow-red">→</span>
@@ -1421,17 +1421,17 @@
             <div class="flow-scenario flow-b">
               <div class="flow-scenario-label">SCENARIO B — AUTOMATIC SYNC RESUMES</div>
               <div class="node-flow">
-                <span class="node node-edge">🍓 RPi Edge</span>
+                <span class="node node-edge">RPi Edge</span>
                 <span class="arrow">→</span>
                 <span class="node node-db">SQLite (60 rows)</span>
                 <span class="arrow">→</span>
-                <span class="node node-lock">🔒 AES-256</span>
+                <span class="node node-lock">AES-256</span>
                 <span class="arrow arrow-green">→→</span>
                 <span class="node node-cloud">Django</span>
                 <span class="arrow arrow-green">→</span>
-                <span class="node node-ok">ALL 60 SYNCED ✅</span>
+                <span class="node node-ok">ALL 60 SYNCED [OK]</span>
               </div>
-              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">✅ Automatic
+              <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">[OK] Automatic
                 bulk-sync of all queued records with deduplication &amp; ordering preserved</div>
             </div>
           </div>
@@ -1439,7 +1439,7 @@
 
         <div class="log-grid">
           <div class="log-block">
-            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; RECOVERY LOG <span>INTERNET: ════════
+            <div class="log-header log-header-a">SCENARIO A &nbsp;·&nbsp; RECOVERY LOG <span>INTERNET: ████████
                 RESTORED</span></div>
             <div class="log-body">
               <div class="log-line"><span class="log-time">13:00:00</span><span class="log-info">[NET] </span><span>ISP
@@ -1455,11 +1455,11 @@
               <div class="log-line"><span class="log-time">13:15:00</span><span class="log-warn">[HR] </span><span>Paper
                   register cross-check initiated (slow, error-prone)</span></div>
               <div class="log-line"><span class="log-time">15:00:00</span><span class="log-err">[FINAL]
-                </span><span>Partial reconstruction: 40% records verified, 60% ambiguous 😢</span></div>
+                </span><span>Partial reconstruction: 40% records verified, 60% ambiguous [FAIL]</span></div>
             </div>
           </div>
           <div class="log-block">
-            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; RECOVERY LOG <span>INTERNET: ════════
+            <div class="log-header log-header-b">SCENARIO B &nbsp;·&nbsp; RECOVERY LOG <span>INTERNET: ████████
                 RESTORED</span></div>
             <div class="log-body">
               <div class="log-line"><span class="log-time">13:00:00</span><span class="log-ok">[NET] </span><span>ISP
@@ -1467,22 +1467,22 @@
               <div class="log-line"><span class="log-time">13:00:01</span><span class="log-sec">[SYNC]
                 </span><span>Fetching unsynced rows from SQLite... 60 rows found.</span></div>
               <div class="log-line"><span class="log-time">13:00:01</span><span
-                  class="log-shield">[CRYPTO]</span><span>Batch encrypting 60 records with 🔒 AES-256-CBC...</span></div>
+                  class="log-shield">[CRYPTO]</span><span>Batch encrypting 60 records with AES-256-CBC...</span></div>
               <div class="log-line"><span class="log-time">13:00:02</span><span class="log-ok">[POST]
                 </span><span>Sending batch to Django: POST /api/attendance/sync</span></div>
               <div class="log-line"><span class="log-time">13:00:04</span><span class="log-ok">[200] </span><span>Server
                   ACK: 60/60 records accepted. Deduped. Ordered.</span></div>
               <div class="log-line"><span class="log-time">13:00:04</span><span
-                  class="log-sec">[UPDATE]</span><span>SQLite: 60 rows marked status=SYNCED ✅</span></div>
+                  class="log-sec">[UPDATE]</span><span>SQLite: 60 rows marked status=SYNCED [OK]</span></div>
               <div class="log-line"><span class="log-time">13:00:05</span><span class="log-ok">[FINAL]
-                </span><span>Cloud attendance DB: complete &amp; accurate. 100% ✅ 🎉</span></div>
+                </span><span>Cloud attendance DB: complete &amp; accurate. 100% [OK] [SUCCESS]</span></div>
             </div>
           </div>
         </div>
 
         <div class="verdict">
           <div class="verdict-card verdict-a">
-            <div class="verdict-icon">😢</div>
+            <div class="verdict-icon">[FAIL]</div>
             <div class="verdict-text">
               <div class="verdict-title">SCENARIO A — PERMANENT &amp; IRRECOVERABLE</div>
               <div class="verdict-desc">Restoration of the internet changes absolutely nothing. The window of lost data
@@ -1492,7 +1492,7 @@
             </div>
           </div>
           <div class="verdict-card verdict-b">
-            <div class="verdict-icon">🎉</div>
+            <div class="verdict-icon">[SUCCESS]</div>
             <div class="verdict-text">
               <div class="verdict-title">SCENARIO B — FULL AUTO-RECOVERY IN SECONDS</div>
               <div class="verdict-desc">Within 4 seconds of internet restoration, the edge gateway auto-syncs all 60
@@ -1505,7 +1505,7 @@
       </section>
 
 
-      <!── ══════════════════════════════════════════ EVENT 4 ══ ──>
+      <!-- ══════════════════════════════════════════ EVENT 4 ══ -->
       <section class="event-section" style="animation-delay:0.3s">
         <div class="event-header" style="margin-top:72px">
           <div class="event-num">04</div>
@@ -1539,7 +1539,7 @@
                 <div><span class="pl-key">"timestamp"</span>: <span class="pl-str">"2025-02-25T09:00:01Z"</span>,</div>
                 <div style="margin-top:6px;"><span class="pl-warn">// ⚠ IDENTICAL PAYLOAD — SERVER CANNOT
                     DISTINGUISH</span></div>
-                <div><span class="pl-warn">// ⚠ NO NONCE — SERVER ACCEPTS AS LEGITIMATE ✅ (for attacker)</span></div>
+                <div><span class="pl-warn">// ⚠ NO NONCE — SERVER ACCEPTS AS LEGITIMATE [OK] (for attacker)</span></div>
               </div>
               <div
                 style="font-family:var(--mono);font-size:11px;color:var(--a-color);padding:10px;background:#1a0606;border-radius:2px;">
@@ -1561,7 +1561,7 @@
                 <div><span class="pl-key">"nonce"</span>: <span class="pl-enc">"a3f19b24c7e0d521"</span>,</div>
                 <div><span class="pl-key">"ts"</span>: <span class="pl-enc">"1740474001"</span>,</div>
                 <div><span class="pl-key">"payload"</span>: <span
-                    class="pl-enc">"U2FsdGVkX1+zQP8gH3vNkL...mXpQwE9a3RdTv+lK██"</span>,</div>
+                    class="pl-enc">"U2FsdGVkX1+zQP8gH3vNkL...mXpQwE9a3RdTv+lK=="</span>,</div>
                 <div style="margin-top:6px;"><span class="pl-comment">// Attacker sees only ciphertext. Cannot read emp
                     data.</span></div>
               </div>
@@ -1593,10 +1593,10 @@
           style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:20px 24px;">
           <div
             style="font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-bottom:14px;">
-            ● THREAT TIMELINE — SCENARIO B</div>
+            THREAT TIMELINE — SCENARIO B</div>
           <div class="threat-timeline">
             <div class="tt-line"><span class="tt-ts">09:00:01</span><span class="tt-actor tt-actor-sys">[EDGE]
-              </span><span class="tt-msg">Punch captured → 🔒 AES-256 encrypted, nonce=a3f19b24, ts=1740474001</span></div>
+              </span><span class="tt-msg">Punch captured → AES-256 encrypted, nonce=a3f19b24, ts=1740474001</span></div>
             <div class="tt-line"><span class="tt-ts">09:00:02</span><span class="tt-actor tt-actor-sys">[EDGE]
               </span><span class="tt-msg">Encrypted payload transmitted to Django → HTTP 200 OK. Nonce stored
                 server-side.</span></div>
@@ -1607,10 +1607,10 @@
               </span><span class="tt-msg">Replays captured ciphertext verbatim: POST /api/attendance/sync</span></div>
             <div class="tt-line"><span class="tt-ts">12:00:00</span><span
                 class="tt-actor tt-actor-err">[DJANGO]</span><span class="tt-msg">Decrypts payload. Checks nonce
-                a3f19b24 → SEEN BEFORE → 403 FORBIDDEN ✅</span></div>
+                a3f19b24 → SEEN BEFORE → 403 FORBIDDEN [OK]</span></div>
             <div class="tt-line"><span class="tt-ts">12:00:00</span><span
                 class="tt-actor tt-actor-err">[DJANGO]</span><span class="tt-msg">Checks timestamp delta: 10,799 sec >
-                300 sec window → STALE → 403 FORBIDDEN ✅</span></div>
+                300 sec window → STALE → 403 FORBIDDEN [OK]</span></div>
             <div class="tt-line"><span class="tt-ts">12:00:01</span><span class="tt-actor tt-actor-ok"> [AUDIT]
               </span><span class="tt-msg">Security event logged. IP blacklisted. Admin alerted. Attack neutralized.
                 🛡</span></div>
@@ -1619,10 +1619,10 @@
       </section>
 
 
-      <!── ══════════════════════════════════════════ EXEC SUMMARY ══ ──>
+      <!-- ══════════════════════════════════════════ EXEC SUMMARY ══ -->
       <div class="exec-summary">
         <div class="exec-header">
-          <div class="exec-label">EXECUTIVE SUMMARY </div>
+          <div class="exec-label">▸ EXECUTIVE SUMMARY ◂</div>
           <div class="exec-title">Why Scenario B Wins — Every Single Time</div>
         </div>
         <div class="exec-body">
@@ -1653,12 +1653,12 @@
                 <div class="metric-sub">Auto-sync in &lt;5 sec</div>
               </div>
               <div class="metric-card metric-a">
-                <div class="metric-val">😢</div>
+                <div class="metric-val">[FAIL]</div>
                 <div class="metric-label">Replay Block</div>
                 <div class="metric-sub">MITM attack succeeds</div>
               </div>
               <div class="metric-card metric-b">
-                <div class="metric-val">✅</div>
+                <div class="metric-val">[OK]</div>
                 <div class="metric-label">Replay Block</div>
                 <div class="metric-sub">Nonce + timestamp</div>
               </div>
@@ -1678,37 +1678,37 @@
               <tr>
                 <td class="td-feature">Offline Resilience</td>
                 <td class="td-a">None — drops on disconnect</td>
-                <td class="td-b">✅ SQLite buffer, unlimited queue</td>
+                <td class="td-b">[OK] SQLite buffer, unlimited queue</td>
               </tr>
               <tr>
                 <td class="td-feature">Encryption</td>
                 <td class="td-a">None — plaintext JSON</td>
-                <td class="td-b">✅ 🔒 AES-256-CBC end-to-end</td>
+                <td class="td-b">[OK] AES-256-CBC end-to-end</td>
               </tr>
               <tr>
                 <td class="td-feature">Replay Protection</td>
                 <td class="td-a">None — trivially replayable</td>
-                <td class="td-b">✅ Nonce + timestamp window</td>
+                <td class="td-b">[OK] Nonce + timestamp window</td>
               </tr>
               <tr>
                 <td class="td-feature">Data Integrity</td>
                 <td class="td-a">No checksum / audit trail</td>
-                <td class="td-b">✅ Checksummed, ordered sync</td>
+                <td class="td-b">[OK] Checksummed, ordered sync</td>
               </tr>
               <tr>
                 <td class="td-feature">Failure Mode</td>
                 <td class="td-a">Silent data loss</td>
-                <td class="td-b">✅ Graceful queue &amp; retry</td>
+                <td class="td-b">[OK] Graceful queue &amp; retry</td>
               </tr>
               <tr>
                 <td class="td-feature">Privacy (GDPR)</td>
                 <td class="td-a">Biometric PII exposed in transit</td>
-                <td class="td-b">✅ Encrypted, never exposed</td>
+                <td class="td-b">[OK] Encrypted, never exposed</td>
               </tr>
               <tr>
                 <td class="td-feature">HR Dependency</td>
                 <td class="td-a">Manual backup required</td>
-                <td class="td-b">✅ Fully automated, zero manual</td>
+                <td class="td-b">[OK] Fully automated, zero manual</td>
               </tr>
             </table>
           </div>
@@ -1723,7 +1723,7 @@
                 system divorces data <em>capture</em> from data <em>transmission</em>, making it immune to internet
                 failures.
                 The <strong>SQLite buffer</strong> on the Raspberry Pi acts as a durable write-ahead log, ensuring no
-                punch event is ever lost regardless of connectivity. <strong>🔒 AES-256-CBC encryption</strong> means that
+                punch event is ever lost regardless of connectivity. <strong>AES-256-CBC encryption</strong> means that
                 even if an adversary intercepts every packet, they obtain only meaningless ciphertext.
                 The <strong>nonce + timestamp anti-replay mechanism</strong> closes the final attack vector — replayed
                 packets are detected and rejected at the server within milliseconds.
@@ -1738,10 +1738,10 @@
         </div>
       </div>
 
-      <!── FOOTER ──>
+      <!-- FOOTER -->
       <div
         style="padding:24px 60px 40px;border-top:1px solid var(--border);margin-top:40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;font-family:var(--mono);font-size:10px;color:var(--text-dim);">
-        <span>HYBRID CLOUD-EDGE BIOMETRIC ATTENDANCE SYSTEM — MAJOR PROJECT SIMULATION</span>
+        <span>▸ HYBRID CLOUD-EDGE BIOMETRIC ATTENDANCE SYSTEM — MAJOR PROJECT SIMULATION</span>
         <span>GENERATED: 2025-02-25 &nbsp;|&nbsp; ARCHITECT: SENIOR SYSTEM SIMULATION v1.0</span>
       </div>
 
