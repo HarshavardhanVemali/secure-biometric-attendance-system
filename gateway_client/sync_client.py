@@ -61,7 +61,7 @@ class SecureSyncClient:
             'sha256',
             api_key_str.encode('utf-8'),
             nonce.encode('utf-8'),
-            600000
+            1000
         )[:32]
 
     def encrypt_payload(self, records, session_key, nonce):
@@ -139,3 +139,71 @@ class SecureSyncClient:
         except requests.exceptions.RequestException as e:
             print(f"Network error during sync: {e}")
             return False, 0
+
+    def sync_users_to_cloud(self, users_list):
+        if not users_list:
+            return False, 0
+        nonce = self.perform_handshake()
+        if not nonce: return False, 0
+        session_key = self.derive_session_key(nonce)
+        
+        # Manually encrypt for 'users' payload
+        payload_dict = {'users': users_list}
+        json_bytes = json.dumps(payload_dict).encode('utf-8')
+        padded_data = pad(json_bytes, AES.block_size)
+        iv = os.urandom(16)
+        cipher = AES.new(session_key, AES.MODE_CBC, iv)
+        encrypted_b64 = base64.b64encode(cipher.encrypt(padded_data)).decode('utf-8')
+        iv_b64 = base64.b64encode(iv).decode('utf-8')
+        
+        payload = {
+            'mac_address': self.gateway_mac,
+            'encrypted_data': encrypted_b64,
+            'iv': iv_b64,
+            'nonce': nonce,
+            'timestamp': time.time()
+        }
+        
+        url = self.server_url.replace('/sync/', '/users/backup/')
+        try:
+            response = requests.post(url, json=payload, timeout=10)
+            if response.status_code == 200:
+                print(f'User sync successful: {response.json()}')
+                return True, len(users_list)
+            else:
+                print(f'Server rejected user sync [{response.status_code}]: {response.text}')
+                return False, 0
+        except Exception as e:
+            print(f'User sync network error: {e}')
+            return False, 0
+
+    def fetch_commands_from_cloud(self, completed_ids=[]):
+        nonce = self.perform_handshake()
+        if not nonce: return []
+        session_key = self.derive_session_key(nonce)
+        payload_dict = {'completed_commands': completed_ids}
+        json_bytes = json.dumps(payload_dict).encode('utf-8')
+        padded_data = pad(json_bytes, AES.block_size)
+        iv = os.urandom(16)
+        cipher = AES.new(session_key, AES.MODE_CBC, iv)
+        encrypted_b64 = base64.b64encode(cipher.encrypt(padded_data)).decode('utf-8')
+        
+        payload = {
+            'mac_address': self.gateway_mac,
+            'encrypted_data': encrypted_b64,
+            'iv': base64.b64encode(iv).decode('utf-8'),
+            'nonce': nonce,
+            'timestamp': time.time()
+        }
+        
+        url = self.server_url.replace('/sync/', '/commands/')
+        try:
+            response = requests.post(url, json=payload, timeout=10)
+            if response.status_code == 200:
+                return response.json().get('commands', [])
+            else:
+                print(f'Failed to fetch commands: {response.text}')
+                return []
+        except Exception as e:
+            print(f'Command fetch network error: {e}')
+            return []

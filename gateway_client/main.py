@@ -1,12 +1,12 @@
 import time
 import threading
 import schedule
-import os
+import subprocess
 from flask import Flask, request
-from dotenv import load_dotenv
 from datetime import datetime
 from buffer_manager import OfflineBuffer
 from sync_client import SecureSyncClient
+from device_manager import BiometricManager
 
 def get_mac_address():
     """
@@ -24,17 +24,14 @@ def get_mac_address():
             # Fallback for local simulation
             return "e4:5f:01:68:8a:a5"
 
-# --- Load Environment Configuration ---
-load_dotenv()
-
 # --- Configuration ---
-DJANGO_SERVER_URL = os.getenv("DJANGO_SERVER_URL", "http://127.0.0.1:8000/api/v1/gateway/sync/")
-GATEWAY_MAC = os.getenv("GATEWAY_MAC", get_mac_address())
-GATEWAY_API_KEY = os.getenv("GATEWAY_API_KEY") 
-FLASK_PORT = int(os.getenv("FLASK_PORT", "8080"))
-DATABASE_PATH = os.getenv("DATABASE_PATH", "local_buffer.db")
+DJANGO_SERVER_URL = "https://campuspark.online/api/v1/gateway/sync/"
+GATEWAY_MAC = get_mac_address()
+GATEWAY_API_KEY = "009e69d9-04c2-4a5e-b95a-10c4f6a86a57" # Generated via Django Admin
+FLASK_PORT = 8080
 
 # --- Initialize Modules ---
+DATABASE_PATH = "/home/harsha/gateway_client/local_buffer.db"
 buffer = OfflineBuffer(db_path=DATABASE_PATH)
 sync_client = SecureSyncClient(DJANGO_SERVER_URL, GATEWAY_MAC, GATEWAY_API_KEY)
 
@@ -88,9 +85,9 @@ def iclock_cdata():
                 # Convert timestamp for JSON syncing
                 try:
                     dt = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
-                    iso_timestamp = dt.isoformat() + "Z"
+                    iso_timestamp = dt.isoformat()
                 except ValueError:
-                    iso_timestamp = datetime.now().isoformat() + "Z"
+                    iso_timestamp = datetime.now().isoformat()
                     
                 # Instantly save to SQLite (zero data loss)
                 saved = buffer.add_log(user_id, device_ip, iso_timestamp, punch_type, verification_mode)
@@ -131,9 +128,36 @@ def cleanup_routine():
     print("Running weekly cleanup of old synced logs...")
     buffer.cleanup_synced_logs(days_old=7)
 
+
+def device_sync_routine():
+    print("Polling Django for queued biometric commands...")
+    commands = sync_client.fetch_commands_from_cloud()
+    if commands:
+        bm = BiometricManager(ip="10.190.45.94")
+        completed = []
+        for cmd in commands:
+            try:
+                bm.process_command(cmd['action'], cmd['user_id'], cmd['first_name'], cmd['last_name'])
+                completed.append(cmd['id'])
+            except Exception as e:
+                print(f"Error executing command {cmd}: {e}")
+        # Send ack to clear them
+        if completed:
+            sync_client.fetch_commands_from_cloud(completed_ids=completed)
+
+def device_backup_routine():
+    print("Backing up users from Biometric Machine...")
+    bm = BiometricManager(ip="10.190.45.94")
+    users = bm.fetch_all_users()
+    if users:
+        print(f"Uploading {len(users)} users to Cloud Backup...")
+        sync_client.sync_users_to_cloud(users_list=users)
+
 def schedule_runner():
     # Try syncing to server every 2 minutes
     schedule.every(2).minutes.do(process_and_sync)
+    schedule.every(5).minutes.do(device_sync_routine)
+    schedule.every(24).hours.do(device_backup_routine)
     # Cleanup every Sunday
     schedule.every().sunday.at("02:00").do(cleanup_routine)
     
@@ -141,9 +165,8 @@ def schedule_runner():
         schedule.run_pending()
         time.sleep(1)
 
-
 if __name__ == "__main__":
-    print("Starting Secure Biometric Gateway Service...")
+    print(f"Starting Secure Biometric Gateway Service...")
     print(f"Gateway MAC: {GATEWAY_MAC}")
     print(f"Server URL: {DJANGO_SERVER_URL}")
     print(f"Listening for eSSL ADMS Pushes on port {FLASK_PORT} (/iclock/cdata.aspx)...")
@@ -154,7 +177,7 @@ if __name__ == "__main__":
     import sys
     if "--test-punch" in sys.argv:
         print("Generating test punch...")
-        buffer.add_log("TEST_USER", "127.0.0.1", datetime.now().isoformat() + "Z", "Check-in", 1)
+        buffer.add_log("TEST_USER", "127.0.0.1", datetime.now().isoformat(), "Check-in", 1)
         process_and_sync()
         sys.exit(0)
     scheduler_thread = threading.Thread(target=schedule_runner, daemon=True)
