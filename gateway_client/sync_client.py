@@ -144,7 +144,8 @@ class SecureSyncClient:
         if not users_list:
             return False, 0
         nonce = self.perform_handshake()
-        if not nonce: return False, 0
+        if not nonce:
+            return False, 0
         session_key = self.derive_session_key(nonce)
         
         # Manually encrypt for 'users' payload
@@ -179,7 +180,8 @@ class SecureSyncClient:
 
     def fetch_commands_from_cloud(self, completed_ids=[]):
         nonce = self.perform_handshake()
-        if not nonce: return []
+        if not nonce:
+            return []
         session_key = self.derive_session_key(nonce)
         payload_dict = {'completed_commands': completed_ids}
         json_bytes = json.dumps(payload_dict).encode('utf-8')

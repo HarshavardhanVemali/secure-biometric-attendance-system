@@ -1,7 +1,6 @@
 import time
 import threading
 import schedule
-import subprocess
 from flask import Flask, request
 from datetime import datetime
 from buffer_manager import OfflineBuffer
@@ -166,7 +165,7 @@ def schedule_runner():
         time.sleep(1)
 
 if __name__ == "__main__":
-    print(f"Starting Secure Biometric Gateway Service...")
+    print("Starting Secure Biometric Gateway Service...")
     print(f"Gateway MAC: {GATEWAY_MAC}")
     print(f"Server URL: {DJANGO_SERVER_URL}")
     print(f"Listening for eSSL ADMS Pushes on port {FLASK_PORT} (/iclock/cdata.aspx)...")

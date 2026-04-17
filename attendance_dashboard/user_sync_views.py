@@ -2,7 +2,7 @@ import json
 import base64
 import time
 import hashlib
-from datetime import datetime, timedelta
+from datetime import timedelta
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 from rest_framework.views import APIView
@@ -106,7 +106,6 @@ class DeviceUserBackupView(APIView):
 
         users = payload_data.get('users', [])
         for user_data in users:
-            uid = str(user_data.get('uid'))
             user_id = str(user_data.get('user_id'))
             name = user_data.get('name', 'Unknown')
 
