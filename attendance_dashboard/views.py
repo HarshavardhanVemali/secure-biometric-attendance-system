@@ -105,7 +105,7 @@ class SecureSyncView(APIView):
             'sha256', 
             api_key_str.encode('utf-8'), 
             session.nonce.encode('utf-8'), 
-            600000
+            1000
         )[:32]
         
         try:
@@ -237,3 +237,7 @@ def dashboard_stats(request):
         'scores': scores,
         'risk_counts': [risk_counts['LOW'], risk_counts['MEDIUM'], risk_counts['HIGH']],
     })
+
+def threat_simulator(request):
+    """Serve the interactive cybersecurity threat simulator dashboard."""
+    return render(request, 'threat_simulator.html')
