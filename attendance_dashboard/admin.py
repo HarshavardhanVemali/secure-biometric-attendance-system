@@ -1,7 +1,22 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
-from .models import GatewayDevice, BiometricMachine, Employee, AttendanceLog, StudentAnalytics, AlertSettings, NotificationLog
+from .models import (
+    GatewayDevice, 
+    BiometricMachine, 
+    Employee, 
+    AttendanceLog, 
+    StudentAnalytics, 
+    AlertSettings, 
+    NotificationLog,
+    DeviceSyncQueue
+)
 from django.utils.html import format_html
+
+@admin.register(DeviceSyncQueue)
+class DeviceSyncQueueAdmin(ModelAdmin):
+    list_display = ('action', 'employee', 'gateway', 'is_processed', 'created_at', 'processed_at')
+    list_filter = ('is_processed', 'action', 'gateway')
+    search_fields = ('employee__first_name', 'employee__biometric_id')
 
 @admin.register(GatewayDevice)
 class GatewayDeviceAdmin(ModelAdmin):

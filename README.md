@@ -3,11 +3,12 @@
 ### A Hybrid Cloud-Edge IoT Framework with AES-256 Encryption and AI-Powered Analytics
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Security: AES-256](https://img.shields.io/badge/Encryption-AES--256--CBC-brightgreen.svg)](SECURITY.md)
+[![Security: AES-256-GCM](https://img.shields.io/badge/Encryption-AES--256--GCM-brightgreen.svg)](SECURITY.md)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)]()
 [![Framework: Django 5](https://img.shields.io/badge/Framework-Django%205-092E20.svg)]()
 [![Edge: Raspberry Pi](https://img.shields.io/badge/Edge-Raspberry%20Pi-C51A4A.svg)]()
 [![Key Derivation: PBKDF2](https://img.shields.io/badge/KDF-PBKDF2%20600K-orange.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-campuspark.online-blue.svg)](https://campuspark.online/simulator/)
 
 
 ## Table of Contents
@@ -50,6 +51,7 @@ Existing biometric attendance systems suffer from fundamental architectural weak
 | **No Device Authentication** | Any device on the network can impersonate a biometric machine and inject false records. |
 | **Internet Dependency** | Direct-to-cloud models fail completely during network outages, resulting in permanent data loss. |
 | **Replay Attacks** | Without nonce or timestamp validation, captured packets can be re-sent to duplicate attendance entries. |
+| **Data Tampering** | Without cryptographic integrity checks, a man-in-the-middle can silently modify packet contents (e.g., change a Check-in to Check-out) before forwarding the request. |
 | **Irreversible Breach Impact** | Biometric identifiers (fingerprints, facial data) cannot be changed once compromised, unlike passwords. |
 
 These vulnerabilities make traditional systems unsafe for handling sensitive biometric data in production environments.
@@ -125,12 +127,12 @@ Session Key = PBKDF2-HMAC-SHA256(
 
 The 600,000-iteration count follows NIST recommendations for high-security key stretching, making brute-force attacks computationally infeasible.
 
-### AES-256-CBC Encryption
+### AES-256-GCM Encryption
 All attendance data is encrypted at the gateway level before transmission:
-- **Algorithm**: AES-256 in CBC (Cipher Block Chaining) mode
+- **Algorithm**: AES-256 in GCM (Galois/Counter Mode)
 - **Key Length**: 256 bits (2^256 possible combinations)
-- **IV**: Randomly generated 16-byte initialization vector per payload
-- **Padding**: PKCS7 block padding
+- **Authentication Tag**: 16-byte GCM tag validates integrity — any tampering invalidates the payload
+- **Nonce**: Randomly generated 16-byte nonce per payload (also acts as IV)
 
 ### Anti-Replay Protection
 Each sync request includes:
@@ -167,13 +169,15 @@ If the Ollama service is offline, the system falls back to statistical heuristic
 | **Admin Interface** | django-unfold | Modern, responsive admin UI |
 | **Task Queue** | Celery + Redis | Asynchronous log processing and scheduled alerts |
 | **Scheduled Tasks** | django-celery-beat | Crontab-based daily safety checks |
-| **Encryption** | PyCryptodome (AES-256-CBC) | Payload encryption/decryption |
+| **Encryption** | PyCryptodome (AES-256-GCM) | Payload encryption/decryption with integrity tags |
 | **Key Derivation** | hashlib (PBKDF2-HMAC-SHA256) | Dynamic session key generation |
 | **Email Alerts** | AWS SES via django-ses | Automated absence notifications |
 | **AI Analytics** | Ollama (Llama 3.2:1b) | Local LLM for risk assessment |
+| **Tunnel** | Cloudflare Tunnel (cloudflared) | Zero-config HTTPS for Pi-to-Cloud |
 | **Edge Database** | SQLite | Offline buffering on Raspberry Pi |
 | **Edge Hardware** | Raspberry Pi 4/5 | Local secure gateway |
 | **Biometric Devices** | eSSL / ZKTeco (ADMS protocol) | Fingerprint, face, password verification |
+| **Threat Simulator** | Vanilla JS + Django View | Live interactive attack scenario visualization |
 
 
 ## Project Structure
@@ -184,11 +188,14 @@ If the Ollama service is offline, the system falls back to statistical heuristic
 |   |-- models.py               # Data models (Gateway, Employee, Logs, Analytics)
 |   |-- views.py                # Handshake and Sync API endpoints
 |   |-- api_views.py            # Additional REST API views
+|   |-- user_sync_views.py      # Bidirectional device sync API (push users to scanner)
 |   |-- tasks.py                # Celery tasks (safety checks, scheduling)
 |   |-- analytics_engine.py     # AI performance scoring (Ollama integration)
 |   |-- admin.py                # Django Unfold admin configuration
 |   |-- tests.py                # Unit tests (crypto, handshake, sync)
-|   `-- templates/              # HTML templates (simulation report)
+|   `-- templates/              # HTML templates
+|       |-- threat_simulator.html        # Interactive attack simulation dashboard
+|       `-- biometric_simulation_report.html  # Static security analysis report
 |
 |-- backend/                    # Django project configuration
 |   |-- settings.py             # Settings (env-based, no hardcoded secrets)
@@ -197,8 +204,9 @@ If the Ollama service is offline, the system falls back to statistical heuristic
 |
 |-- gateway_client/             # Raspberry Pi Edge Client
 |   |-- main.py                 # Gateway entry point and ADMS listener
-|   |-- sync_client.py          # Handshake, encryption, and cloud sync
+|   |-- sync_client.py          # Handshake, AES-256-GCM encryption, and cloud sync
 |   |-- buffer_manager.py       # Local SQLite offline buffer
+|   |-- device_manager.py       # Bidirectional ZKTeco control (add/delete users)
 |   |-- biometric_gateway.service  # systemd service file for auto-start
 |   `-- .env.example            # Gateway environment template
 |
@@ -210,6 +218,7 @@ If the Ollama service is offline, the system falls back to statistical heuristic
 |   `-- get_gateway_creds.py    # Gateway credential provisioning utility
 |
 |-- scripts/                    # Operational utilities
+|-- nginx_https.conf            # Production Nginx HTTPS reverse-proxy config
 |-- .env.example                # Root environment template
 |-- requirements.txt            # Python dependencies
 |-- manage.py                   # Django management entry point
@@ -302,6 +311,7 @@ A comprehensive suite is provided in `tests_and_simulations/` to validate securi
 | **Outage Simulation** | Simulates a 4-hour network outage to verify zero-data-loss buffering and automatic recovery sync | `python tests_and_simulations/run_simulation.py` |
 | **Demo Data Seed** | Populates 30 days of attendance data for 5 employee profiles with AI-generated performance scores | `python tests_and_simulations/seed_demo_data.py` |
 | **Sync Flow Test** | End-to-end test of the buffer-encrypt-sync pipeline | `python tests_and_simulations/test_sync_flow.py` |
+| **Threat Simulator** | Live browser-based interactive dashboard demonstrating MITM, Replay, and Tampering attacks | Visit `/simulator/` |
 
 ## Environment Variables
 
@@ -343,7 +353,10 @@ Developed the Python-based gateway system with local SQLite buffering, AES-256-C
 Built the backend using Django 5 with a secure REST API, implemented server-side decryption and verification logic, and created a responsive admin dashboard using django-unfold with real-time monitoring and analytics.
 
 **Phase 4 -- Testing and Security Validation**
-Tested device-to-gateway communication, validated offline buffering during network failures, performed security testing against MitM and replay attacks, and conducted end-to-end system testing from biometric scan to dashboard output.
+Tested device-to-gateway communication, validated offline buffering during network failures, performed security testing against MitM, Replay, and Tampering attacks, and conducted end-to-end system testing from biometric scan to dashboard output.
+
+**Phase 5 -- Presentation and Simulation**
+Built the interactive `Threat Simulator` dashboard to visually demonstrate security vulnerabilities and defences in real-time. Implemented bidirectional device control (push user templates from cloud to biometric scanner) via the `DeviceSyncQueue` model and `device_manager` ZKTeco API wrapper.
 
 
 ## Contributing

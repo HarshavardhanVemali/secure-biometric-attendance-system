@@ -22,6 +22,21 @@ class GatewaySession(models.Model):
     def __str__(self):
         return f"Session for {self.gateway.name} - {self.nonce[:8]}"
 
+class DeviceSyncQueue(models.Model):
+    ACTION_CHOICES = (
+        ('ADD_USER', 'Add/Update User'),
+        ('DELETE_USER', 'Delete User'),
+    )
+    gateway = models.ForeignKey(GatewayDevice, on_delete=models.CASCADE, related_name='sync_queue')
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE)
+    is_processed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.action} for {self.employee} on {self.gateway.name}"
+
 class BiometricMachine(models.Model):
     name = models.CharField(max_length=100)
     ip_address = models.GenericIPAddressField(help_text="Local IP address of the machine")

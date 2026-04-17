@@ -11,6 +11,7 @@ from django.urls import reverse
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from rest_framework.test import APIClient
+from django.conf import settings
 from .models import GatewayDevice, GatewaySession
 
 class CryptographyTestCase(TestCase):
@@ -90,7 +91,7 @@ class CryptographyTestCase(TestCase):
             'sha256', 
             self.api_key_clean.encode('utf-8'), 
             nonce.encode('utf-8'), 
-            600000
+            settings.PBKDF2_ITERATIONS
         )[:32]
         
         # 3. Encrypt Logs

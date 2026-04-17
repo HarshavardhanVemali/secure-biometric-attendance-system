@@ -1063,7 +1063,21 @@
         animation: fadeIn 0.5s ease both;
       }
 
-      /* responsive */
+    /* ── THEORY PANEL ── */
+.theory-panel { margin: 70px 0 0[[]]; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+.theory-header { padding: 18px 24px; border-bottom: 1px solid var(--border); background: rgba(13,17,23,0.5); display: flex; align-items: center; gap: 12px; }
+.theory-title { font-family: var(--cond); font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
+.theory-intro { padding: 20px 24px 0; font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--text); }
+.theory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px 24px; }
+.theory-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; }
+.theory-card-num { position: absolute; top: -12px; left: 20px; background: var(--a-dim); border: 1px solid var(--a-color); color: var(--a-color); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-family: var(--cond); font-weight: 900; font-size: 14px; }
+.theory-card-title { font-family: var(--cond); font-size: 16px; font-weight: 700; color: #fff; margin-top: 4px; margin-bottom: 10px; }
+.theory-card-p { font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--text-dim); }
+.theory-card-p strong { color: var(--a-color); font-weight: 400; }
+.theory-footer { padding: 18px 24px; background: var(--b-dim); border-top: 1px solid var(--b-color); display: flex; align-items: center; gap: 16px; }
+.theory-footer-text { font-family: var(--mono); font-size: 12px; color: var(--b-color); line-height: 1.6; }
+
+  /* responsive */
       @media (max-width: 768px) {
 
         header,
@@ -1160,8 +1174,7 @@
               <div class="node-flow">
                 <span class="node node-device">BioDevice</span>
                 <span class="arrow">→</span>
-                <span class="node" style="background:#120606;color:#ff8080;border:1px solid #ff808044">Unencrypted
-                  JSON</span>
+                <span class="node" style="background:#120606;color:#ff8080;border:1px solid #ff808044">🔓 Unencrypted JSON</span>
                 <span class="arrow arrow-red">→→</span>
                 <span class="node node-cloud">Cloud API</span>
                 <span class="arrow arrow-green">→</span>
@@ -1281,8 +1294,7 @@
               <div class="node-flow">
                 <span class="node node-device">BioDevice</span>
                 <span class="arrow">→</span>
-                <span class="node" style="background:#120606;color:#ff8080;border:1px solid #ff808044">JSON
-                  Payload</span>
+                <span class="node" style="background:#120606;color:#ff8080;border:1px solid #ff808044">🔓 JSON Payload</span>
                 <span class="arrow arrow-red">→</span>
                 <span class="node node-fail">[FAIL] INTERNET DOWN</span>
                 <span class="arrow arrow-red">→</span>
@@ -1302,7 +1314,7 @@
                 <span class="arrow">→</span>
                 <span class="node node-edge">RPi Edge</span>
                 <span class="arrow">→</span>
-                <span class="node node-db">SQLite Buffer [OK]</span>
+                <span class="node node-db">🗄️ SQLite Buffer ✓[OK]</span>
                 <span class="arrow arrow-yellow">→</span>
                 <span class="node node-warn">⏸ SYNC QUEUED</span>
               </div>
@@ -1409,11 +1421,11 @@
               <div class="node-flow">
                 <span class="node node-cloud">Cloud API</span>
                 <span class="arrow">→</span>
-                <span class="node node-fail">No Backlog Exists</span>
+                <span class="node node-fail">🪫 No Backlog Exists</span>
                 <span class="arrow arrow-red">→</span>
                 <span class="node node-fail">60 Records = NULL</span>
                 <span class="arrow arrow-red">→</span>
-                <span class="node node-fail">LOSS PERMANENT</span>
+                <span class="node node-fail">💀 LOSS PERMANENT</span>
               </div>
               <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--a-color);">Internet
                 restoration is meaningless — the data was destroyed when it was dropped</div>
@@ -1423,13 +1435,13 @@
               <div class="node-flow">
                 <span class="node node-edge">RPi Edge</span>
                 <span class="arrow">→</span>
-                <span class="node node-db">SQLite (60 rows)</span>
+                <span class="node node-db">🗄️ SQLite (60 rows)</span>
                 <span class="arrow">→</span>
                 <span class="node node-lock">AES-256</span>
                 <span class="arrow arrow-green">→→</span>
                 <span class="node node-cloud">Django</span>
                 <span class="arrow arrow-green">→</span>
-                <span class="node node-ok">ALL 60 SYNCED [OK]</span>
+                <span class="node node-ok">✅ ALL 60 SYNCED ✓[OK]</span>
               </div>
               <div style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--b-color);">[OK] Automatic
                 bulk-sync of all queued records with deduplication &amp; ordering preserved</div>
@@ -1738,11 +1750,52 @@
         </div>
       </div>
 
+      <!-- THEORY PANEL -->
+<div class="theory-panel">
+  <div class="theory-header">
+    <div style="font-size:24px; line-height:1; flex-shrink:0;">🛡️</div>
+    <div class="theory-title">"Why do we even need the Raspberry Pi?"</div>
+  </div>
+  <div class="theory-intro">
+    If you remove the Raspberry Pi and plug the domain directly into the biometric device, you are forced to disable almost all the security architecture. Here is exactly how an attacker breaches the system:
+  </div>
+  <div class="theory-grid">
+    <div class="theory-card">
+      <div class="theory-card-num" style="background:var(--surface); border-color:var(--text-dim); font-size:16px;">⚠️</div>
+      <div class="theory-card-title">Directory Brute-Forcing</div>
+      <div class="theory-card-p">
+        An attacker doesn't need physical access. Using common hacker tools like <strong>DirBuster</strong> or <strong>Gobuster</strong>, they shoot 10,000 guesses per second at your domain. Within 45 seconds, the tool successfully discovers your unprotected <span style="color:var(--text);">/api/v1/gateway/sync/</span> endpoint.
+      </div>
+    </div>
+    <div class="theory-card">
+      <div class="theory-card-num" style="background:var(--a-dim); border-color:var(--a-color); font-size:16px;">💀</div>
+      <div class="theory-card-title">The Loss of Cryptography</div>
+      <div class="theory-card-p">
+        Biometric scanners are highly vulnerable and only send raw text (e.g., User 101 punched in). The Pi acts as a <strong>Cryptographic Vault</strong>, wrapping raw data in AES-256 and Anti-Replay Nonces. Without it, the hacker can sit at a coffee shop and forge a raw HTTP POST request to mark themselves present without ever touching the scanner.
+      </div>
+    </div>
+    <div class="theory-card">
+      <div class="theory-card-num" style="background:var(--surface); border-color:var(--text-dim); font-size:16px;">🦹‍♂️</div>
+      <div class="theory-card-title">Network Sniffing (MITM)</div>
+      <div class="theory-card-p">
+        Older scanners do not process modern strict HTTPS; they silently drop down to unencrypted HTTP. If an attacker jumps on the same LAN or Wi-Fi, they can use <strong>Wireshark</strong> to sniff the air. They will instantly read your Sync URL, Employee IDs, and Times in raw plain-text.
+      </div>
+    </div>
+  </div>
+  <div class="theory-footer">
+    <div style="font-size:32px; line-height:1; flex-shrink:0; text-shadow:0 0 15px rgba(0,212,170,0.5);">🏆</div>
+    <div class="theory-footer-text">
+      <strong style="font-family:var(--cond);font-size:16px;letter-spacing:1px;">CONCLUSION: THE ARMORED TRUCK</strong><br>
+      The Raspberry Pi is the unsung hero of the security architecture. You keep the vulnerable biometric scanner physically wired exclusively to the Pi, meaning the scanner's raw vulnerabilities never touch the internet. The Pi acts as an impenetrable armored truck that safely transports the data to the cloud.
+    </div>
+  </div>
+</div>
+
       <!-- FOOTER -->
       <div
         style="padding:24px 60px 40px;border-top:1px solid var(--border);margin-top:40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;font-family:var(--mono);font-size:10px;color:var(--text-dim);">
         <span>▸ HYBRID CLOUD-EDGE BIOMETRIC ATTENDANCE SYSTEM — MAJOR PROJECT SIMULATION</span>
-        <span>GENERATED: 2025-02-25 &nbsp;|&nbsp; ARCHITECT: SENIOR SYSTEM SIMULATION v1.0</span>
+        <span>ARCHITECT: SENIOR SYSTEM SIMULATION v1.0</span>
       </div>
 
     </main>

@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hybrid Cloud-Edge Biometric — Threat Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #080c10;
+  --surface: #0d1117;
+  --border: #1e2d3d;
+  --a-color: #ff4757;
+  --a-dim: #3d1520;
+  --b-color: #00d4aa;
+  --b-dim: #002d25;
+  --accent: #f0b429;
+  --text: #c9d1d9;
+  --text-dim: #586069;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Barlow', sans-serif;
+  --cond: 'Barlow Condensed', sans-serif;
+  --tamper-color: #d63384;
+  --tamper-dim: #2d0a1a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+  z-index: 9999;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,170,0.04) 0%, transparent 70%),
+              radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,71,87,0.03) 0%, transparent 60%);
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+.header {
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(13,17,23,0.98) 0%, rgba(8,12,16,0.9) 100%);
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-mark {
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--b-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 18px rgba(0,212,170,0.3), inset 0 0 12px rgba(0,212,170,0.08);
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%,100% { box-shadow: 0 0 18px rgba(0,212,170,0.3), inset 0 0 12px rgba(0,212,170,0.08); }
+  50% { box-shadow: 0 0 28px rgba(0,212,170,0.5), inset 0 0 16px rgba(0,212,170,0.15); }
+}
+
+.logo-mark svg { width: 20px; height: 20px; }
+
+.header-title { font-family: var(--cond); font-weight: 900; font-size: 22px; letter-spacing: 1px; color: #fff; line-height: 1; }
+.header-sub { font-family: var(--mono); font-size: 10px; color: var(--b-color); letter-spacing: 2px; margin-top: 3px; }
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border: 1px solid rgba(0,212,170,0.3);
+  border-radius: 20px;
+  background: rgba(0,212,170,0.05);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--b-color);
+  letter-spacing: 1px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--b-color);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ── ARCH TOGGLE ── */
+.arch-toggle-wrap {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  padding: 28px 32px 0;
+  gap: 12px;
+}
+
+.arch-btn {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--text-dim);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.arch-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.arch-btn.danger.active { border-color: var(--a-color); color: var(--a-color); background: var(--a-dim); box-shadow: 0 0 20px rgba(255,71,87,0.25); }
+.arch-btn.secure.active { border-color: var(--b-color); color: var(--b-color); background: var(--b-dim); box-shadow: 0 0 20px rgba(0,212,170,0.25); }
+.arch-btn:hover:not(.active) { border-color: #2e3f50; color: var(--text); }
+
+.mode-label {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 10px;
+  color: var(--text-dim);
+}
+
+.mode-label span { color: var(--accent); }
+
+/* ── MAIN CANVAS ── */
+.canvas-wrap {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 32px 0;
+}
+
+/* Architecture diagram */
+.arch-diagram {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px 24px;
+  min-height: 340px;
+  overflow: hidden;
+}
+
+.arch-diagram::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(30,45,61,0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.nodes-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.node-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+.node-icon svg { width: 32px; height: 32px; }
+
+.node-label {
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.node-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: #3a4856;
+  text-align: center;
+  margin-top: -6px;
+}
+
+.node.biometric .node-icon { border-color: rgba(240,180,41,0.4); box-shadow: 0 0 14px rgba(240,180,41,0.1); }
+.node.biometric .node-label { color: var(--accent); }
+.node.raspi .node-icon { border-color: rgba(0,212,170,0.4); box-shadow: 0 0 14px rgba(0,212,170,0.1); }
+.node.raspi .node-label { color: var(--b-color); }
+.node.cloud .node-icon { border-color: rgba(0,212,170,0.3); box-shadow: 0 0 14px rgba(0,212,170,0.08); }
+.node.cloud .node-label { color: var(--b-color); }
+.node.cloud-warn .node-icon { border-color: rgba(255,71,87,0.3); }
+.node.cloud-warn .node-label { color: var(--a-color); }
+
+/* Connector pipes */
+.pipe-area {
+  flex: 1;
+  position: relative;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  min-width: 80px;
+}
+
+.pipe-line {
+  position: absolute;
+  left: 8px; right: 8px;
+  height: 2px;
+  background: var(--border);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pipe-label {
+  position: absolute;
+  top: calc(50% - 22px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+/* Animated packets */
+.packet {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 20;
+}
+
+.packet.plain { background: var(--a-color); color: #fff; box-shadow: 0 0 12px rgba(255,71,87,0.6); }
+.packet.encrypted { background: var(--b-color); color: #000; box-shadow: 0 0 12px rgba(0,212,170,0.6); }
+
+/* Attacker node */
+.attacker-node {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.4s;
+  z-index: 15;
+}
+
+.attacker-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--a-color);
+  background: var(--a-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px rgba(255,71,87,0.4);
+}
+
+.attacker-icon svg { width: 24px; height: 24px; }
+.attacker-label { font-family: var(--mono); font-size: 9px; color: var(--a-color); letter-spacing: 1px; }
+
+.attacker-steal {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 8px;
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 3px;
+  opacity: 0;
+  bottom: -18px;
+}
+
+/* Shield */
+.shield-node {
+  position: absolute;
+  right: 18%;
+  top: 50%;
+  transform: translate(50%, -50%) scale(0);
+  z-index: 30;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shield-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,170,0.2) 0%, rgba(0,45,37,0.8) 100%);
+  border: 2px solid var(--b-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(0,212,170,0.5);
+}
+
+.shield-text {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--b-color);
+  text-align: center;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+/* Replay bounce packet */
+.replay-packet {
+  position: absolute;
+  top: 50%;
+  right: 22%;
+  transform: translateY(-50%);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  z-index: 25;
+  pointer-events: none;
+}
+
+/* ── TERMINAL PANEL ── */
+.panels-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.terminal {
+  background: #050709;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 180px;
+}
+
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #0a0e14;
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-dots { display: flex; gap: 5px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.r { background: #ff5f56; }
+.dot.y { background: #ffbd2e; }
+.dot.g { background: #27c93f; }
+
+.terminal-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-left: 4px;
+}
+
+.terminal-body {
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.8;
+  min-height: 140px;
+}
+
+.terminal-line { display: block; animation: fadeIn 0.2s ease; }
+.terminal-line.prompt::before { content: '$ '; color: var(--b-color); }
+.terminal-line.out { color: var(--text); }
+.terminal-line.err { color: var(--a-color); }
+.terminal-line.ok { color: var(--b-color); }
+.terminal-line.warn { color: var(--accent); }
+.terminal-line.enc { color: #5577aa; word-break: break-all; }
+.terminal-line.dim { color: var(--text-dim); }
+.terminal-cursor::after { content: '▋'; animation: blink 0.8s step-end infinite; color: var(--b-color); }
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── ATTACK BUTTONS ── */
+.attack-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 20px 32px;
+  position: relative;
+  z-index: 10;
+}
+
+.atk-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 24px;
+  border-radius: 7px;
+  border: 1px solid;
+  cursor: pointer;
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.atk-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.atk-btn.mitm { border-color: var(--a-color); color: var(--a-color); background: var(--a-dim); }
+.atk-btn.replay { border-color: var(--accent); color: var(--accent); background: rgba(240,180,41,0.1); }
+.atk-btn.tamper { border-color: var(--tamper-color); color: var(--tamper-color); background: var(--tamper-dim); }
+.atk-btn:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+.atk-btn:active { transform: translateY(0); filter: brightness(0.9); }
+.atk-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.atk-btn svg { width: 16px; height: 16px; }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  position: relative;
+  z-index: 10;
+  margin: 0 32px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.status-indicator.active-a { background: var(--a-color); box-shadow: 0 0 10px rgba(255,71,87,0.6); }
+.status-indicator.active-b { background: var(--b-color); box-shadow: 0 0 10px rgba(0,212,170,0.6); animation: pulseGlow2 1s ease-in-out infinite; }
+.status-indicator.warn { background: var(--accent); box-shadow: 0 0 10px rgba(240,180,41,0.6); }
+
+@keyframes pulseGlow2 { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+.status-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  flex: 1;
+}
+
+.status-code {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 3px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* ── METRIC CARDS ── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 0 32px 28px;
+  position: relative;
+  z-index: 10;
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.metric-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-family: var(--cond);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  transition: color 0.4s;
+}
+
+.metric-unit {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* ── HACKER TERMINAL OVERLAY ── */
+.hacker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8,12,16,0.9);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  backdrop-filter: blur(4px);
+}
+
+.hacker-overlay.show { opacity: 1; pointer-events: all; }
+
+.hacker-window {
+  width: 580px;
+  max-width: 95vw;
+  background: #050709;
+  border: 1px solid var(--a-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(255,71,87,0.3), 0 0 120px rgba(255,71,87,0.1);
+  transform: scale(0.92);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.hacker-overlay.show .hacker-window { transform: scale(1); }
+
+.hacker-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #0f0508;
+  border-bottom: 1px solid var(--a-color);
+}
+
+.hacker-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--a-color);
+  letter-spacing: 1px;
+}
+
+.close-btn {
+  background: none;
+  border: 1px solid var(--a-color);
+  color: var(--a-color);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-btn:hover { background: var(--a-color); color: #fff; }
+
+.hacker-body {
+  padding: 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.9;
+  min-height: 280px;
+  position: relative;
+}
+
+.hacker-line { display: block; animation: fadeIn 0.15s ease; }
+.hacker-line.cmd::before { content: 'root@attacker:~# '; color: var(--a-color); }
+.hacker-line.data-plain { color: #ffdd00; word-break: break-all; }
+.hacker-line.data-enc { color: #2a3a50; word-break: break-all; font-size: 10px; }
+.hacker-line.success { color: var(--a-color); font-weight: bold; }
+.hacker-line.fail { color: var(--text-dim); }
+.hacker-line.info { color: var(--text-dim); }
+
+.result-badge {
+  margin-top: 16px;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.result-badge.breach { background: rgba(255,71,87,0.15); border: 1px solid var(--a-color); color: var(--a-color); }
+.result-badge.blocked { background: var(--b-dim); border: 1px solid var(--b-color); color: var(--b-color); }
+.result-badge.show { opacity: 1; }
+
+/* ── NONCE OVERLAY ── */
+.nonce-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8,12,16,0.85);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  backdrop-filter: blur(4px);
+}
+
+.nonce-overlay.show { opacity: 1; pointer-events: all; }
+
+.nonce-window {
+  width: 460px;
+  max-width: 95vw;
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.nonce-overlay.show .nonce-window { transform: scale(1); }
+
+.nonce-win-bar {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.nonce-body {
+  padding: 28px;
+  text-align: center;
+}
+
+.nonce-shield-big {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nonce-title {
+  font-family: var(--cond);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.nonce-desc {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+
+.nonce-log {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.9;
+}
+
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding: 0 32px 24px;
+  position: relative;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes packetMove {
+  0% { left: 2%; opacity: 1; }
+  100% { left: 96%; opacity: 1; }
+}
+
+@keyframes packetMovePartial {
+  0% { left: 2%; opacity: 1; }
+  100% { left: 52%; opacity: 1; }
+}
+
+@keyframes bounceLeft {
+  0% { right: 18%; opacity: 1; }
+  40% { right: 28%; opacity: 1; }
+  100% { right: 18%; opacity: 0; }
+}
+
+@keyframes shakeNode {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes flashRed {
+  0%,100% { box-shadow: 0 0 14px rgba(0,212,170,0.1); }
+  50% { box-shadow: 0 0 28px rgba(255,71,87,0.6); border-color: var(--a-color); }
+}
+
+@keyframes successPulse {
+  0% { box-shadow: 0 0 14px rgba(0,212,170,0.1); }
+  50% { box-shadow: 0 0 30px rgba(0,212,170,0.5); }
+  100% { box-shadow: 0 0 14px rgba(0,212,170,0.1); }
+}
+
+.shake { animation: shakeNode 0.5s ease; }
+
+/* No-Pi diagram specific */
+.nopi-diagram .raspi-node-wrap { display: none; }
+
+/* ── THEORY PANEL ── */
+.theory-panel { margin: 0 32px 32px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+.theory-header { padding: 18px 24px; border-bottom: 1px solid var(--border); background: rgba(13,17,23,0.5); display: flex; align-items: center; gap: 12px; }
+.theory-title { font-family: var(--cond); font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
+.theory-intro { padding: 20px 24px 0; font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--text); }
+.theory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px 24px; }
+.theory-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; }
+.theory-card-num { position: absolute; top: -12px; left: 20px; background: var(--a-dim); border: 1px solid var(--a-color); color: var(--a-color); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-family: var(--cond); font-weight: 900; font-size: 14px; }
+.theory-card-title { font-family: var(--cond); font-size: 16px; font-weight: 700; color: #fff; margin-top: 4px; margin-bottom: 10px; }
+.theory-card-p { font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--text-dim); }
+.theory-card-p strong { color: var(--a-color); font-weight: 400; }
+.theory-footer { padding: 18px 24px; background: var(--b-dim); border-top: 1px solid var(--b-color); display: flex; align-items: center; gap: 16px; }
+.theory-footer-text { font-family: var(--mono); font-size: 12px; color: var(--b-color); line-height: 1.6; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  .metrics-row { grid-template-columns: repeat(2,1fr); }
+  .panels-row { grid-template-columns: 1fr; }
+  .arch-diagram { padding: 20px 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L4 6V12C4 16.4 7.4 20.5 12 22C16.6 20.5 20 16.4 20 12V6L12 2Z" stroke="#00d4aa" stroke-width="1.5" fill="rgba(0,212,170,0.08)"/>
+        <circle cx="12" cy="12" r="3" fill="#00d4aa" opacity="0.8"/>
+        <path d="M12 9V7M12 17V15M9 12H7M17 12H15" stroke="#00d4aa" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">HYBRID CLOUD-EDGE BIOMETRIC</div>
+      <div class="header-sub">THREAT SIMULATOR v2.4.1</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <div class="live-badge"><div class="live-dot"></div>SIMULATION READY</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);" id="clockDisplay">--:--:--</div>
+  </div>
+</header>
+
+<!-- ARCH TOGGLE -->
+<div class="arch-toggle-wrap">
+  <button class="arch-btn danger active" id="btnNoPi" onclick="switchArch('nopi')">
+    ⚠ WITHOUT Raspberry Pi
+  </button>
+  <button class="arch-btn secure" id="btnWithPi" onclick="switchArch('withpi')">
+    ✦ WITH Raspberry Pi
+  </button>
+</div>
+
+<div class="mode-label" id="modeLabel">
+  Mode: <span>DIRECT BIOMETRIC→CLOUD</span> — Unencrypted TCP/IP payload flows. <span style="color:var(--a-color)">VULNERABLE</span>
+</div>
+
+<!-- MAIN DIAGRAM CANVAS -->
+<div class="canvas-wrap">
+  <div class="arch-diagram" id="archDiagram">
+
+    <!-- NODES ROW -->
+    <div class="nodes-row" id="nodesRow">
+
+      <!-- Biometric Device -->
+      <div class="node biometric">
+        <div class="node-icon" id="nodeDevice">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="4" width="18" height="16" rx="3" stroke="#f0b429" stroke-width="1.5"/>
+            <path d="M8 12C8 9.79 9.79 8 12 8s4 1.79 4 4-1.79 4-4 4" stroke="#f0b429" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="1.5" fill="#f0b429"/>
+            <path d="M6 20V17M18 20V17" stroke="#f0b429" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="node-label">🖐 Biometric<br>Device</div>
+        <div class="node-sub">FINGERPRINT SCAN</div>
+      </div>
+
+      <!-- PIPE 1 -->
+      <div class="pipe-area" id="pipeArea1">
+        <div class="pipe-line" id="pipe1Line"></div>
+        <div class="pipe-label" id="pipe1Label">TCP/IP · RAW</div>
+        <!-- Packet will be injected here by JS -->
+      </div>
+
+      <!-- Raspberry Pi (hidden in no-pi mode) -->
+      <div class="node raspi" id="raspiNodeWrap">
+        <div class="node-icon" id="nodeRaspi">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="5" width="20" height="14" rx="3" stroke="#00d4aa" stroke-width="1.5"/>
+            <circle cx="8" cy="12" r="2.5" stroke="#00d4aa" stroke-width="1.5"/>
+            <path d="M11 12h6M14 9v6" stroke="#00d4aa" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="8" cy="12" r="0.8" fill="#00d4aa"/>
+          </svg>
+        </div>
+        <div class="node-label">🍓 Raspberry Pi<br>Edge Gateway</div>
+        <div class="node-sub">🔒 AES-256-GCM</div>
+      </div>
+
+      <!-- PIPE 2 (only in withpi mode) -->
+      <div class="pipe-area" id="pipeArea2" style="display:none;">
+        <div class="pipe-line" id="pipe2Line"></div>
+        <div class="pipe-label" id="pipe2Label">HTTPS · AES-256</div>
+      </div>
+
+      <!-- Cloud -->
+      <div class="node cloud" id="cloudNode">
+        <div class="node-icon" id="nodeCloud">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M6.5 19C4 19 2 17 2 14.5c0-2.1 1.4-3.9 3.3-4.4A5.5 5.5 0 0 1 16.4 8c.5-.1 1-.2 1.6-.2C20.2 7.8 22 9.6 22 12s-1.8 4-4 4" stroke="#00d4aa" stroke-width="1.5" stroke-linecap="round"/>
+            <rect x="9" y="13" width="6" height="8" rx="1" stroke="#00d4aa" stroke-width="1.5"/>
+            <path d="M12 13v-3M9 16h6" stroke="#00d4aa" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="node-label" id="cloudLabel">☁ Cloud<br>Server</div>
+        <div class="node-sub" id="cloudSub">ATTENDANCE DB</div>
+      </div>
+
+    </div><!-- /nodes-row -->
+
+    <!-- Attacker node (shows during attack) -->
+    <div class="attacker-node" id="attackerNode">
+      <div class="attacker-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="3.5" stroke="#ff4757" stroke-width="1.5"/>
+          <path d="M3 20c0-4 4-7 9-7s9 3 9 7" stroke="#ff4757" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M17 3l4 4-4 4M7 3L3 7l4 4" stroke="#ff4757" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="attacker-label" id="attackerLabel">🦹‍♂️ MITM ATTACKER</div>
+      <div class="attacker-steal" id="attackerSteal"></div>
+    </div>
+
+    <!-- Shield (shows during replay on withpi) -->
+    <div class="shield-node" id="shieldNode">
+      <div class="shield-icon">
+        <svg viewBox="0 0 24 24" fill="none" width="28" height="28">
+          <path d="M12 3L4 7v5c0 4.4 3.4 8.5 8 10 4.6-1.5 8-5.6 8-10V7L12 3z" stroke="#00d4aa" stroke-width="1.5" fill="rgba(0,212,170,0.15)"/>
+          <path d="M9 12l2 2 4-4" stroke="#00d4aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="shield-text">NONCE EXPIRED<br>REQUEST REJECTED</div>
+    </div>
+
+  </div><!-- /arch-diagram -->
+</div>
+
+<!-- ATTACK BUTTONS -->
+<div class="attack-row">
+  <button class="atk-btn mitm" id="btnMitm" onclick="simulateMITM()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M12 5v6m0 0l-3-3m3 3l3-3" stroke-linecap="round"/>
+      <rect x="3" y="14" width="18" height="7" rx="2"/>
+      <circle cx="7" cy="17.5" r="1" fill="currentColor"/>
+    </svg>
+    SIMULATE MITM ATTACK
+  </button>
+  <button class="atk-btn replay" id="btnReplay" onclick="simulateReplay()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M17 2l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3 11V9a4 4 0 0 1 4-4h14" stroke-linecap="round"/>
+      <path d="M7 22l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M21 13v2a4 4 0 0 1-4 4H3" stroke-linecap="round"/>
+    </svg>
+    SIMULATE REPLAY ATTACK
+  </button>
+  <button class="atk-btn tamper" id="btnTamper" onclick="simulateTamper()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    SIMULATE TAMPER ATTACK
+  </button>
+  <button class="atk-btn" style="border-color:var(--b-color);color:var(--b-color);background:var(--b-dim);" onclick="simulateNormalFlow()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M5 12l5 5L20 7" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    NORMAL FLOW
+  </button>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="statusBar">
+  <div class="status-indicator" id="statusDot"></div>
+  <div class="status-text" id="statusText">Ready — Select an architecture and run a simulation.</div>
+  <div class="status-code" id="statusCode">IDLE</div>
+</div>
+
+<!-- TERMINAL PANELS -->
+<div class="canvas-wrap">
+  <div class="panels-row">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <div class="terminal-title">DEVICE LOG — biometric_sensor.log</div>
+      </div>
+      <div class="terminal-body" id="deviceLog">
+        <span class="terminal-line dim"># Biometric Sensor Terminal</span>
+        <span class="terminal-line dim"># Awaiting scan event...</span>
+      </div>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <div class="terminal-title">CLOUD SERVER — attendance_api.log</div>
+      </div>
+      <div class="terminal-body" id="cloudLog">
+        <span class="terminal-line dim"># Cloud Server Terminal</span>
+        <span class="terminal-line dim"># Listening on port 443...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- METRICS -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <div class="metric-label">Packets Sent</div>
+    <div class="metric-value" id="mPackets" style="color:var(--b-color);">0</div>
+    <div class="metric-unit">total transmissions</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Attacks Detected</div>
+    <div class="metric-value" id="mAttacks" style="color:var(--a-color);">0</div>
+    <div class="metric-unit">MITM + Replay + Tamper</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Encryption</div>
+    <div class="metric-value" id="mEncrypt" style="color:var(--text-dim);font-size:16px;">NONE</div>
+    <div class="metric-unit">current mode</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Security Rating</div>
+    <div class="metric-value" id="mRating" style="color:var(--a-color);">LOW</div>
+    <div class="metric-unit">system posture</div>
+  </div>
+</div>
+
+<!-- THEORY PANEL -->
+<div class="theory-panel">
+  <div class="theory-header">
+    <div style="font-size:24px; line-height:1; flex-shrink:0;">🛡️</div>
+    <div class="theory-title">"Why do we even need the Raspberry Pi?"</div>
+  </div>
+  <div class="theory-intro">
+    If you remove the Raspberry Pi and plug the domain directly into the biometric device, you are forced to disable almost all the security architecture. Here is exactly how an attacker breaches the system:
+  </div>
+  <div class="theory-grid">
+    <div class="theory-card">
+      <div class="theory-card-num" style="background:var(--surface); border-color:var(--text-dim); font-size:16px;">⚠️</div>
+      <div class="theory-card-title">Directory Brute-Forcing</div>
+      <div class="theory-card-p">
+        An attacker doesn't need physical access. Using common hacker tools like <strong>DirBuster</strong> or <strong>Gobuster</strong>, they shoot 10,000 guesses per second at your domain. Within 45 seconds, the tool successfully discovers your unprotected <span style="color:var(--text);">/api/v1/gateway/sync/</span> endpoint.
+      </div>
+    </div>
+    <div class="theory-card">
+      <div class="theory-card-num" style="background:var(--a-dim); border-color:var(--a-color); font-size:16px;">💀</div>
+      <div class="theory-card-title">The Loss of Cryptography</div>
+      <div class="theory-card-p">
+        Biometric scanners are highly vulnerable and only send raw text (e.g., User 101 punched in). The Pi acts as a <strong>Cryptographic Vault</strong>, wrapping raw data in AES-256 and Anti-Replay Nonces. Without it, the hacker can sit at a coffee shop and forge a raw HTTP POST request to mark themselves present without ever touching the scanner.
+      </div>
+    </div>
+    <div class="theory-card">
+      <div class="theory-card-num" style="background:var(--surface); border-color:var(--text-dim); font-size:16px;">🦹‍♂️</div>
+      <div class="theory-card-title">Network Sniffing (MITM)</div>
+      <div class="theory-card-p">
+        Older scanners do not process modern strict HTTPS; they silently drop down to unencrypted HTTP. If an attacker jumps on the same LAN or Wi-Fi, they can use <strong>Wireshark</strong> to sniff the air. They will instantly read your Sync URL, Employee IDs, and Times in raw plain-text.
+      </div>
+    </div>
+  </div>
+  <div class="theory-footer">
+    <div style="font-size:32px; line-height:1; flex-shrink:0; text-shadow:0 0 15px rgba(0,212,170,0.5);">🏆</div>
+    <div class="theory-footer-text">
+      <strong style="font-family:var(--cond);font-size:16px;letter-spacing:1px;">CONCLUSION: THE ARMORED TRUCK</strong><br>
+      The Raspberry Pi is the unsung hero of the security architecture. You keep the vulnerable biometric scanner physically wired exclusively to the Pi, meaning the scanner's raw vulnerabilities never touch the internet. The Pi acts as an impenetrable armored truck that safely transports the data to the cloud.
+    </div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div>🖐 Biometric Device</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--b-color);"></div>🍓 Raspberry Pi Edge</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--b-color);opacity:0.5;"></div>☁ Cloud Server</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--a-color);"></div>🦹‍♂️ Attacker (MITM)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5577aa;"></div>🔒 AES-256 Payload</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ffdd00;"></div>Plain-text Payload</div>
+</div>
+
+<!-- HACKER OVERLAY -->
+<div class="hacker-overlay" id="hackerOverlay">
+  <div class="hacker-window">
+    <div class="hacker-bar">
+      <div class="hacker-title">▶ ATTACKER_TERMINAL — Intercepted Packet Analysis</div>
+      <button class="close-btn" onclick="closeHacker()">× CLOSE</button>
+    </div>
+    <div class="hacker-body" id="hackerBody"></div>
+  </div>
+</div>
+
+<!-- NONCE OVERLAY -->
+<div class="nonce-overlay" id="nonceOverlay">
+  <div class="nonce-window" id="nonceWindow">
+    <div class="nonce-win-bar" id="nonceWinBar">
+      <span style="font-family:var(--mono);font-size:11px;" id="nonceWinTitle">Replay Attack Result</span>
+      <button class="close-btn" id="nonceCloseBtn" onclick="closeNonce()">× CLOSE</button>
+    </div>
+    <div class="nonce-body" id="nonceBody"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let arch = 'nopi'; // 'nopi' | 'withpi'
+let simRunning = false;
+let packetsCount = 0;
+let attacksCount = 0;
+
+const $ = id => document.getElementById(id);
+
+/* ═══════════════════════════════════════════════
+   CLOCK
+═══════════════════════════════════════════════ */
+setInterval(() => {
+  const now = new Date();
+  $('clockDisplay').textContent = now.toTimeString().slice(0,8);
+}, 1000);
+
+/* ═══════════════════════════════════════════════
+   ARCH SWITCH
+═══════════════════════════════════════════════ */
+function switchArch(mode) {
+  if (simRunning) return;
+  arch = mode;
+  const nopi = mode === 'nopi';
+
+  $('btnNoPi').classList.toggle('active', nopi);
+  $('btnNoPi').classList.toggle('danger', true);
+  $('btnWithPi').classList.toggle('active', !nopi);
+  $('btnWithPi').classList.toggle('secure', true);
+
+  $('raspiNodeWrap').style.display = nopi ? 'none' : 'flex';
+  $('pipeArea2').style.display = nopi ? 'none' : 'flex';
+
+  $('pipe1Label').textContent = nopi ? 'TCP/IP · RAW' : 'UART / USB';
+  $('pipe1Label').style.color = nopi ? 'var(--a-color)' : 'var(--b-color)';
+
+  $('modeLabel').innerHTML = nopi
+    ? 'Mode: <span>DIRECT BIOMETRIC→CLOUD</span> — Unencrypted TCP/IP payload flows. <span style="color:var(--a-color)">VULNERABLE</span>'
+    : 'Mode: <span style="color:var(--b-color)">BIOMETRIC→RASPI EDGE→CLOUD</span> — AES-256-GCM encrypted tunneled flows. <span style="color:var(--b-color)">SECURED</span>';
+
+  $('cloudLabel').innerHTML = nopi ? '☁ Cloud<br>API' : '☁ Django<br>Server';
+  $('cloudNode').className = nopi ? 'node cloud-warn' : 'node cloud';
+  $('nodeCloud').style.borderColor = nopi ? 'rgba(255,71,87,0.3)' : 'rgba(0,212,170,0.3)';
+
+  $('mEncrypt').textContent = nopi ? 'NONE' : 'AES-256';
+  $('mEncrypt').style.color = nopi ? 'var(--a-color)' : 'var(--b-color)';
+  $('mRating').textContent = nopi ? 'LOW' : 'HIGH';
+  $('mRating').style.color = nopi ? 'var(--a-color)' : 'var(--b-color)';
+
+  updateStatus('idle', `Architecture switched: ${nopi ? 'NO Raspberry Pi — INSECURE' : 'WITH Raspberry Pi — SECURED'}`, nopi ? 'WARN' : 'SECURE');
+  resetLogs();
+}
+
+/* ═══════════════════════════════════════════════
+   STATUS
+═══════════════════════════════════════════════ */
+function updateStatus(type, text, code) {
+  const dot = $('statusDot');
+  dot.className = 'status-indicator';
+  if (type === 'danger') dot.classList.add('active-a');
+  else if (type === 'success') dot.classList.add('active-b');
+  else if (type === 'warn') dot.classList.add('warn');
+  $('statusText').textContent = text;
+  $('statusCode').textContent = code;
+}
+
+/* ═══════════════════════════════════════════════
+   TERMINAL LOGGING
+═══════════════════════════════════════════════ */
+function logLine(termId, cls, text, delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const term = $(termId);
+      const span = document.createElement('span');
+      span.className = 'terminal-line ' + cls;
+      span.textContent = text;
+      term.appendChild(span);
+      term.scrollTop = term.scrollHeight;
+      resolve();
+    }, delay);
+  });
+}
+
+function resetLogs() {
+  $('deviceLog').innerHTML = '<span class="terminal-line dim"># Biometric Sensor Terminal</span><span class="terminal-line dim"># Awaiting scan event...</span>';
+  $('cloudLog').innerHTML = '<span class="terminal-line dim"># Cloud Server Terminal</span><span class="terminal-line dim"># Listening on port 443...</span>';
+}
+
+/* ═══════════════════════════════════════════════
+   PACKET ANIMATION HELPER
+═══════════════════════════════════════════════ */
+function animatePacket(pipeId, text, cls, duration, partial = false) {
+  return new Promise(resolve => {
+    const pipe = $(pipeId);
+    const pkt = document.createElement('div');
+    pkt.className = 'packet ' + cls;
+    pkt.textContent = text;
+    pkt.style.left = '2%';
+    pkt.style.opacity = '1';
+    pipe.appendChild(pkt);
+
+    const start = performance.now();
+    const targetLeft = partial ? 50 : 96;
+
+    function step(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+      pkt.style.left = (2 + eased * (targetLeft - 2)) + '%';
+      if (t < 1) requestAnimationFrame(step);
+      else {
+        if (!partial) {
+          pkt.style.opacity = '0';
+          setTimeout(() => { pkt.remove(); resolve(); }, 300);
+        } else {
+          resolve(pkt);
+        }
+      }
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   DISABLE / ENABLE BUTTONS
+═══════════════════════════════════════════════ */
+function setButtons(disabled) {
+  simRunning = disabled;
+  ['btnMitm','btnReplay','btnNoPi','btnWithPi'].forEach(id => {
+    $(id).disabled = disabled;
+  });
+  document.querySelectorAll('.atk-btn').forEach(b => b.disabled = disabled);
+}
+
+/* ═══════════════════════════════════════════════
+   NORMAL FLOW
+═══════════════════════════════════════════════ */
+async function simulateNormalFlow() {
+  if (simRunning) return;
+  setButtons(true);
+  resetLogs();
+  const nopi = arch === 'nopi';
+  packetsCount++;
+  $('mPackets').textContent = packetsCount;
+
+  updateStatus('success', 'Initiating normal biometric scan flow...', 'SCANNING');
+
+  await logLine('deviceLog','prompt','scan --finger-id=2 --user=EMP_0042', 0);
+  await logLine('deviceLog','ok','[OK] Fingerprint match: 98.7% confidence', 400);
+  await logLine('deviceLog','out','[INFO] Preparing payload...', 700);
+
+  if (nopi) {
+    await logLine('deviceLog','err','[WARN] No encryption layer detected', 1000);
+    await logLine('deviceLog','out','[TX] Sending raw payload over TCP/IP...', 1300);
+    updateStatus('warn', 'Sending unencrypted biometric payload over network...', 'TX_RAW');
+    await animatePacket('pipeArea1', '{usr:EMP_0042,fp:0xA3D1}', 'plain', 1400);
+    await logLine('cloudLog','prompt','POST /api/attendance HTTP/1.1', 1400);
+    await logLine('cloudLog','warn','[WARN] Unencrypted payload received', 1700);
+    await logLine('cloudLog','ok','[200] Attendance recorded: EMP_0042', 2000);
+    $('nodeCloud').style.animation = 'successPulse 0.6s ease';
+    setTimeout(() => { $('nodeCloud').style.animation = ''; }, 700);
+    updateStatus('warn', 'Attendance recorded — but transmission was UNENCRYPTED and interceptable.', 'WARN');
+  } else {
+    await logLine('deviceLog','out','[TX] Sending raw data to Raspberry Pi edge...', 1000);
+    await animatePacket('pipeArea1', 'RAW_DATA', 'encrypted', 900);
+    await logLine('deviceLog','ok','[OK] Data handed to edge gateway', 1000);
+    await logLine('deviceLog','ok','[INFO] Raspberry Pi handling AES-256 encryption', 1300);
+    updateStatus('success', 'Edge gateway encrypting payload with AES-256-GCM...', 'ENCRYPTING');
+    await logLine('cloudLog','prompt', 'POST /api/attendance HTTPS/2', 1600);
+    await animatePacket('pipeArea2', '🔒 AES256-GCM', 'encrypted', 900);
+    await logLine('cloudLog','ok','[200] Encrypted payload verified & recorded: EMP_0042', 2200);
+    $('nodeCloud').style.animation = 'successPulse 0.6s ease';
+    setTimeout(() => { $('nodeCloud').style.animation = ''; }, 700);
+    updateStatus('success', 'Attendance recorded securely via encrypted edge-to-cloud channel.', 'SECURED');
+  }
+
+  setButtons(false);
+}
+
+/* ═══════════════════════════════════════════════
+   MITM SIMULATION
+═══════════════════════════════════════════════ */
+async function simulateMITM() {
+  if (simRunning) return;
+  setButtons(true);
+  resetLogs();
+  const nopi = arch === 'nopi';
+  packetsCount++;
+  attacksCount++;
+  $('mPackets').textContent = packetsCount;
+  $('mAttacks').textContent = attacksCount;
+
+  updateStatus('danger', 'MITM Attack initiated — Monitoring network traffic...', 'ATTACK_INIT');
+
+  // Show attacker
+  const atk = $('attackerNode');
+  $('attackerLabel').textContent = 'MITM ATTACKER';
+  atk.style.opacity = '1';
+
+  await logLine('deviceLog','prompt','scan --finger-id=7 --user=EMP_0099', 0);
+  await logLine('deviceLog','ok','[OK] Fingerprint match: 95.2%', 400);
+  await logLine('deviceLog','out','[TX] Sending payload...', 700);
+
+  if (nopi) {
+    // Packet goes partially then stops (intercepted)
+    updateStatus('danger', 'PACKET INTERCEPTED in transit! Attacker reading plain-text data...', 'INTERCEPTED');
+    const pkt = await animatePacket('pipeArea1', '{usr:EMP_0099,fp:0xB7C3,token:abc123}', 'plain', 900, true);
+
+    await new Promise(r => setTimeout(r, 200));
+    if (pkt) {
+      pkt.style.transition = 'top 0.4s ease, opacity 0.3s';
+      pkt.style.top = '80%';
+      setTimeout(() => { pkt.style.opacity = '0'; setTimeout(() => pkt.remove(), 300); }, 500);
+    }
+
+    atk.style.boxShadow = 'none';
+    const steal = $('attackerSteal');
+    steal.style.background = 'var(--a-dim)';
+    steal.style.border = '1px solid var(--a-color)';
+    steal.style.color = 'var(--a-color)';
+    steal.textContent = '✓ PACKET CAPTURED';
+    steal.style.opacity = '1';
+
+    await logLine('cloudLog','err','[ERROR] Connection timeout — packet never arrived', 1200);
+
+    // Show hacker terminal
+    setTimeout(() => showHackerTerminal(false), 600);
+  } else {
+    // Packet travels pipe1 fully to raspi, raspi encrypts, then pipe2 to cloud
+    updateStatus('warn', 'Attacker attempting intercept — packet encrypted at edge gateway...', 'ENCRYPTING');
+    await animatePacket('pipeArea1', 'RAW_DATA', 'encrypted', 900);
+    await logLine('deviceLog','ok','[OK] Data at edge gateway — encrypting...', 1000);
+
+    // Attacker tries to intercept on pipe2
+    const pkt2 = await animatePacket('pipeArea2', '🔒 AES256-GCM ENCRYPTED', 'encrypted', 900, true);
+
+    await new Promise(r => setTimeout(r, 200));
+    // Attacker gets it but can't read
+    if (pkt2) {
+      pkt2.style.transition = 'top 0.4s ease';
+      pkt2.style.top = '80%';
+      setTimeout(() => {
+        pkt2.style.top = '50%';
+        pkt2.style.opacity = '0';
+        setTimeout(() => pkt2.remove(), 400);
+      }, 600);
+    }
+
+    const steal = $('attackerSteal');
+    steal.style.background = 'var(--b-dim)';
+    steal.style.border = '1px solid var(--b-color)';
+    steal.style.color = 'var(--b-color)';
+    steal.textContent = '✗ 🔒 ENCRYPTED — UNREADABLE';
+    steal.style.opacity = '1';
+
+    updateStatus('success', 'MITM Blocked — Attacker captured only AES-256 ciphertext garbage.', 'BLOCKED');
+
+    // Packet still reaches cloud
+    await animatePacket('pipeArea2', '🔒 AES256-GCM', 'encrypted', 700);
+    await logLine('cloudLog','ok','[200] Encrypted packet verified — attendance recorded', 1800);
+
+    setTimeout(() => showHackerTerminal(true), 600);
+  }
+
+  setTimeout(() => {
+    atk.style.opacity = '0';
+    $('attackerSteal').style.opacity = '0';
+    setButtons(false);
+  }, 3500);
+}
+
+/* ═══════════════════════════════════════════════
+   REPLAY ATTACK SIMULATION
+═══════════════════════════════════════════════ */
+async function simulateReplay() {
+  if (simRunning) return;
+  setButtons(true);
+  resetLogs();
+  const nopi = arch === 'nopi';
+  packetsCount += 2;
+  attacksCount++;
+  $('mPackets').textContent = packetsCount;
+  $('mAttacks').textContent = attacksCount;
+
+  updateStatus('danger', 'Replay Attack initiated — Re-sending captured attendance packet...', 'REPLAY_INIT');
+
+  await logLine('deviceLog','err','[ATTACKER] Replaying captured token...', 0);
+  await logLine('deviceLog','err','[REPLAY] Token: abc123 Nonce: 8f3d', 400);
+  await logLine('deviceLog','err','[TX] Sending duplicate packet...', 700);
+
+  if (nopi) {
+    await animatePacket('pipeArea1', 'REPLAY:{token:abc123}', 'plain', 900);
+    await logLine('cloudLog','prompt','POST /api/attendance HTTP/1.1', 900);
+    await logLine('cloudLog','err','[WARN] No replay protection found', 1200);
+    await logLine('cloudLog','err','[200] !! Duplicate accepted — EMP_0099 clocked in AGAIN !!', 1500);
+    $('nodeCloud').className = 'node cloud-warn';
+
+    updateStatus('danger', 'REPLAY ATTACK SUCCEEDED — Cloud accepted duplicate packet without validation!', 'BREACH');
+    setTimeout(() => showNonceOverlay(false), 800);
+  } else {
+    await animatePacket('pipeArea1', 'REPLAY_ATTEMPT', 'plain', 700);
+    await logLine('deviceLog','ok','[RASPI] Nonce check — token seen before!', 900);
+    await logLine('deviceLog','err','[BLOCKED] Stale nonce rejected at edge', 1200);
+
+    // Animate replay on pipe2 then bounce back
+    const pipe2 = $('pipeArea2');
+    const rpkt = document.createElement('div');
+    rpkt.className = 'packet plain';
+    rpkt.textContent = 'REPLAY_BLOCKED';
+    rpkt.style.right = '2%';
+    rpkt.style.left = 'auto';
+    rpkt.style.opacity = '1';
+    pipe2.appendChild(rpkt);
+
+    // Shield appears at cloud
+    const shield = $('shieldNode');
+    setTimeout(() => { shield.style.transform = 'translate(50%,-50%) scale(1)'; }, 600);
+
+    // Bounce
+    setTimeout(() => {
+      rpkt.style.transition = 'right 0.5s ease, opacity 0.4s';
+      rpkt.style.right = '10%';
+      rpkt.style.background = 'var(--a-color)';
+    }, 700);
+    setTimeout(() => {
+      rpkt.style.right = '96%';
+      rpkt.style.opacity = '0';
+    }, 1300);
+    setTimeout(() => {
+      rpkt.remove();
+      shield.style.transform = 'translate(50%,-50%) scale(0)';
+    }, 2000);
+
+    await logLine('cloudLog','ok','[CLOUD] Nonce validation failed — rejecting request', 1800);
+    await logLine('cloudLog','ok','[403] Replay attack neutralized by nonce system', 2100);
+
+    updateStatus('success', 'REPLAY ATTACK BLOCKED — Nonce expired, duplicate request rejected at edge.', 'PROTECTED');
+    setTimeout(() => showNonceOverlay(true), 900);
+  }
+
+  setTimeout(() => setButtons(false), 3000);
+}
+
+/* ═══════════════════════════════════════════════
+   TAMPERING ATTACK SIMULATION
+═══════════════════════════════════════════════ */
+async function simulateTamper() {
+  if (simRunning) return;
+  setButtons(true);
+  resetLogs();
+  const nopi = arch === 'nopi';
+  packetsCount++;
+  attacksCount++;
+  $('mPackets').textContent = packetsCount;
+  $('mAttacks').textContent = attacksCount;
+
+  updateStatus('danger', 'Tampering Attack initiated — Attempting to falsify payload data...', 'TAMPER_INIT');
+
+  const atk = $('attackerNode');
+  $('attackerLabel').textContent = 'DATA TAMPERER';
+  atk.style.opacity = '1';
+
+  await logLine('deviceLog', 'prompt', 'POST /iclock/cdata.aspx?SN=JNP2234601116', 0);
+  await logLine('deviceLog', 'out', 'Raw: 22331A4765\t2025-09-22 08:00:00\t0\t1', 400);
+  
+  if (nopi) {
+    updateStatus('danger', 'Attacker intercepting & modifying raw string data...', 'INTERCEPTED');
+    const pkt = await animatePacket('pipeArea1', 'status=0 (Check-in)', 'plain', 900, true);
+
+    await new Promise(r => setTimeout(r, 600));
+    if (pkt) {
+      pkt.style.transition = 'top 0.4s ease, background 0.4s';
+      pkt.style.top = '80%';
+      pkt.style.background = 'var(--tamper-color)';
+      pkt.textContent = 'status=1 (Check-out)';
+      
+      const steal = $('attackerSteal');
+      steal.style.background = 'var(--tamper-dim)';
+      steal.style.border = '1px solid var(--tamper-color)';
+      steal.style.color = 'var(--tamper-color)';
+      steal.textContent = '✎ MODIFIED: 0 → 1';
+      steal.style.opacity = '1';
+      
+      await logLine('deviceLog', 'err', '[ATTACKER] Intercepted raw attendance string', 200);
+      await logLine('deviceLog', 'err', '[ATTACKER] Changing STATUS byte to 1 (Tampered)...', 500);
+      
+      setTimeout(async () => {
+        pkt.style.top = '50%';
+        pkt.style.left = '50%';
+        const iv = setInterval(() => {
+          let l = parseFloat(pkt.style.left);
+          l += 2;
+          pkt.style.left = l + '%';
+          if (l > 95) {
+             clearInterval(iv);
+             pkt.remove();
+          }
+        }, 16);
+      }, 1000);
+    }
+
+    await logLine('cloudLog', 'prompt', 'POST /api/sync HTTP/1.1', 1800);
+    await logLine('cloudLog', 'warn', '[WARN] Received status: 1 (Check-out)', 2100);
+    await logLine('cloudLog', 'err', '[200] Falsified record accepted by server!', 2400);
+    
+    updateStatus('danger', 'TAMPERING SUCCESS — Cloud accepted forged status! Attacker manipulated attendance.', 'FORGED');
+    setTimeout(() => showTamperOverlay(false), 900);
+  } else {
+    updateStatus('warn', 'Attacker attempting to modify encrypted GCM payload...', 'TAMPER_FAILURE');
+    await animatePacket('pipeArea1', 'RAW_DATA', 'plain', 700);
+    await logLine('deviceLog', 'ok', '[OK] Handed to Raspberry Pi Edge Wrapper', 400);
+
+    const pkt2 = await animatePacket('pipeArea2', '🔒 AES-256-GCM', 'encrypted', 900, true);
+    await new Promise(r => setTimeout(r, 600));
+
+    if (pkt2) {
+      pkt2.style.transition = 'top 0.4s ease';
+      pkt2.style.top = '80%';
+      
+      const steal = $('attackerSteal');
+      steal.style.background = 'var(--tamper-dim)';
+      steal.style.border = '1px solid var(--tamper-color)';
+      steal.style.color = 'var(--tamper-color)';
+      steal.textContent = '✎ ATTEMPTED BIT-FLIP';
+      steal.style.opacity = '1';
+
+      await logLine('deviceLog', 'err', '[ATTACKER] Corrupting bit at offset 0x1F...', 200);
+      
+      setTimeout(() => {
+        pkt2.style.top = '50%';
+        let l = 50;
+        const iv = setInterval(() => {
+          l += 2;
+          pkt2.style.left = l + '%';
+          if (l > 95) {
+            clearInterval(iv);
+            pkt2.remove();
+          }
+        }, 16);
+      }, 800);
+    }
+
+    await logLine('cloudLog', 'prompt', 'POST /api/sync HTTPS/2', 1800);
+    await logLine('cloudLog', 'err', '[400] GCM AUTH TAG MISMATCH!', 2100);
+    await logLine('cloudLog', 'err', '[SECURITY] Integrity compromised — Dropping packet', 2400);
+    
+    const shield = $('shieldNode');
+    setTimeout(() => { shield.style.transform = 'translate(50%,-50%) scale(1)'; }, 2100);
+    setTimeout(() => { shield.style.transform = 'translate(50%,-50%) scale(0)'; }, 4000);
+
+    updateStatus('success', 'TAMPERING BLOCKED — Authentication tag failure. Data discarded.', 'INTEGRITY_LOCKED');
+    setTimeout(() => showTamperOverlay(true), 900);
+  }
+
+  setTimeout(() => {
+    atk.style.opacity = '0';
+    $('attackerSteal').style.opacity = '0';
+    setButtons(false);
+  }, 4500);
+}
+
+function showTamperOverlay(isBlocked) {
+  const win = $('nonceWindow');
+  const bar = $('nonceWinBar');
+  const body = $('nonceBody');
+  const closeBtn = $('nonceCloseBtn');
+
+  if (isBlocked) {
+    win.style.borderColor = 'var(--tamper-color)';
+    win.style.boxShadow = '0 0 60px rgba(214,51,132,0.3)';
+    bar.style.borderColor = 'var(--tamper-color)';
+    bar.style.background = 'var(--tamper-dim)';
+    closeBtn.style.borderColor = 'var(--tamper-color)';
+    closeBtn.style.color = 'var(--tamper-color)';
+    $('nonceWinTitle').textContent = 'Tampering Attack Result';
+    $('nonceWinTitle').style.color = 'var(--tamper-color)';
+    body.innerHTML = `
+      <div class="nonce-shield-big" style="background:var(--tamper-dim);border:2px solid var(--tamper-color);box-shadow:0 0 24px rgba(214,51,132,0.4);">
+        <svg viewBox="0 0 24 24" fill="none" width="40" height="40"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#d63384" stroke-width="1.5" fill="rgba(214,51,132,0.15)"/><path d="M12 8v4M12 16h.01" stroke="#d63384" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="nonce-title" style="color:var(--tamper-color);">INTEGRITY ATTACK BLOCKED</div>
+      <div class="nonce-desc">Because the Raspberry Pi uses <strong>AES-256-GCM</strong>, every packet includes an "Authentication Tag". If an attacker flips even a single bit in the payload, the tag mismatch is detected by the cloud. The modified data is instantly discarded.</div>
+      <div class="nonce-log">
+        <span style="color:var(--text-dim);">[ATTACKER] Bit-flipped ciphertext offset 0x22</span><br>
+        <span style="color:var(--a-color);">[CLOUD] decrypt(payload) → MAC_INVALID</span><br>
+        <span style="color:var(--b-color);">[CLOUD] Forged data rejected before processing</span><br>
+        <span style="color:var(--b-color);">[DB] Integrity maintained — System secure ✓</span>
+      </div>
+    `;
+  } else {
+    win.style.borderColor = 'var(--a-color)';
+    win.style.boxShadow = '0 0 60px rgba(255,71,87,0.3)';
+    bar.style.borderColor = 'var(--a-color)';
+    bar.style.background = 'var(--a-dim)';
+    closeBtn.style.borderColor = 'var(--a-color)';
+    closeBtn.style.color = 'var(--a-color)';
+    $('nonceWinTitle').textContent = 'Tampering Attack Result';
+    $('nonceWinTitle').style.color = 'var(--a-color)';
+    body.innerHTML = `
+      <div class="nonce-shield-big" style="background:var(--a-dim);border:2px solid var(--a-color);box-shadow:0 0 24px rgba(255,71,87,0.4);">
+        <svg viewBox="0 0 24 24" fill="none" width="40" height="40"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke="#ff4757" stroke-width="1.5" fill="rgba(255,71,87,0.15)"/></svg>
+      </div>
+      <div class="nonce-title" style="color:var(--a-color);">DATA TAMPERING SUCCESS</div>
+      <div class="nonce-desc">In the "Direct-to-Cloud" architecture, logs are sent as raw strings. The attacker intercepted the packet and changed the check-in status using a simple "Find & Replace". Since there is no integrity signature, the cloud server believed the lie.</div>
+      <div class="nonce-log">
+        <span style="color:var(--a-color);">[ATTACKER] Found raw status bit '0'</span><br>
+        <span style="color:var(--a-color);">[ATTACKER] Modified payload to status '1'</span><br>
+        <span style="color:var(--a-color);">[CLOUD] Log accepted blindly - No hash check</span><br>
+        <span style="color:var(--text-dim);">[DB] !! ATTENDANCE RECORD TAMPERED !!</span>
+      </div>
+    `;
+  }
+
+  $('nonceOverlay').classList.add('show');
+}
+
+/* ═══════════════════════════════════════════════
+   HACKER TERMINAL OVERLAY
+═══════════════════════════════════════════════ */
+function showHackerTerminal(isEncrypted) {
+  const body = $('hackerBody');
+  body.innerHTML = '';
+
+  const addLine = (cls, text, delay) => {
+    return new Promise(r => {
+      setTimeout(() => {
+        const s = document.createElement('span');
+        s.className = 'hacker-line ' + cls;
+        s.textContent = text;
+        body.appendChild(s);
+        body.scrollTop = body.scrollHeight;
+        r();
+      }, delay);
+    });
+  };
+
+  $('hackerOverlay').classList.add('show');
+
+  const lines_plain = [
+    ['cmd','tcpdump -i eth0 -w capture.pcap', 100],
+    ['info','Capturing packets...', 400],
+    ['info','Packet intercepted from 192.168.1.42 → 203.0.113.10', 700],
+    ['cmd','python3 parse_packet.py capture.pcap', 1000],
+    ['info','[*] Parsing TCP payload...', 1300],
+    ['data-plain','{ "user_id": "EMP_0099",', 1600],
+    ['data-plain','  "fingerprint_hash": "0xB7C3F1A2",', 1900],
+    ['data-plain','  "timestamp": "2025-03-15T09:42:11Z",', 2200],
+    ['data-plain','  "device_id": "BIO_GATE_01",', 2500],
+    ['data-plain','  "session_token": "abc123XYZ_STOLEN" }', 2800],
+    ['success','[✓] PLAINTEXT DATA SUCCESSFULLY STOLEN!', 3200],
+    ['success','[✓] Session token extracted — replay attack possible', 3500],
+  ];
+
+  const lines_enc = [
+    ['cmd','tcpdump -i eth0 -w capture.pcap', 100],
+    ['info','Capturing packets...', 400],
+    ['info','Packet intercepted from 10.0.0.1 → 203.0.113.10', 700],
+    ['cmd','python3 parse_packet.py capture.pcap', 1000],
+    ['info','[*] Parsing encrypted TLS payload...', 1300],
+    ['data-enc','AES-256-GCM CIPHERTEXT:', 1600],
+    ['data-enc','4f3a8b1c9e2d7f6a0b4c5d3e1f2a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2', 1900],
+    ['data-enc','1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2', 2200],
+    ['data-enc','8f3d9c2b1a5e7f4d6c8b0a2e4f6d8c0b2a4e6f8d0c2b4a6e8f0d2c4b6a8e0f', 2500],
+    ['fail','[✗] Cannot decrypt without AES-256 private key', 2900],
+    ['fail','[✗] GCM authentication tag mismatch — tampering impossible', 3200],
+    ['fail','[✗] No plaintext recoverable — attack FAILED', 3500],
+  ];
+
+  const lines = isEncrypted ? lines_enc : lines_plain;
+  lines.forEach(([cls, text, delay]) => addLine(cls, text, delay));
+
+  setTimeout(() => {
+    const badge = document.createElement('div');
+    badge.className = isEncrypted ? 'result-badge blocked' : 'result-badge breach';
+    badge.innerHTML = isEncrypted
+      ? '<span>🛡</span> ATTACK NEUTRALIZED — AES-256 ENCRYPTION HOLDS'
+      : '<span>☠</span> DATA BREACH CONFIRMED — CREDENTIALS STOLEN';
+    body.appendChild(badge);
+    setTimeout(() => badge.classList.add('show'), 50);
+  }, isEncrypted ? 4000 : 4000);
+}
+
+function closeHacker() { $('hackerOverlay').classList.remove('show'); }
+
+/* ═══════════════════════════════════════════════
+   NONCE OVERLAY
+═══════════════════════════════════════════════ */
+function showNonceOverlay(isBlocked) {
+  const win = $('nonceWindow');
+  const bar = $('nonceWinBar');
+  const body = $('nonceBody');
+  const closeBtn = $('nonceCloseBtn');
+
+  if (isBlocked) {
+    win.style.borderColor = 'var(--b-color)';
+    win.style.boxShadow = '0 0 60px rgba(0,212,170,0.3)';
+    bar.style.borderColor = 'var(--b-color)';
+    bar.style.background = 'var(--b-dim)';
+    closeBtn.style.borderColor = 'var(--b-color)';
+    closeBtn.style.color = 'var(--b-color)';
+    $('nonceWinTitle').style.color = 'var(--b-color)';
+    body.innerHTML = `
+      <div class="nonce-shield-big" style="background:radial-gradient(circle, rgba(0,212,170,0.2) 0%, rgba(0,45,37,0.8) 100%);border:2px solid var(--b-color);box-shadow:0 0 24px rgba(0,212,170,0.4);">
+        <svg viewBox="0 0 24 24" fill="none" width="40" height="40"><path d="M12 3L4 7v5c0 4.4 3.4 8.5 8 10 4.6-1.5 8-5.6 8-10V7L12 3z" stroke="#00d4aa" stroke-width="1.5" fill="rgba(0,212,170,0.15)"/><path d="M9 12l2 2 4-4" stroke="#00d4aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="nonce-title" style="color:var(--b-color);">REPLAY ATTACK BLOCKED</div>
+      <div class="nonce-desc">The Raspberry Pi edge gateway invalidated the duplicate request using a one-time cryptographic nonce. The cloud server never processed the forged packet.</div>
+      <div class="nonce-log">
+        <span style="color:var(--text-dim);">[EDGE] Nonce check → 8f3d already consumed</span><br>
+        <span style="color:var(--a-color);">[EDGE] Token TTL expired — 47s ago</span><br>
+        <span style="color:var(--b-color);">[EDGE] Request rejected before cloud transmission</span><br>
+        <span style="color:var(--b-color);">[CLOUD] No duplicate entry — database integrity intact ✓</span>
+      </div>
+    `;
+  } else {
+    win.style.borderColor = 'var(--a-color)';
+    win.style.boxShadow = '0 0 60px rgba(255,71,87,0.3)';
+    bar.style.borderColor = 'var(--a-color)';
+    bar.style.background = 'var(--a-dim)';
+    closeBtn.style.borderColor = 'var(--a-color)';
+    closeBtn.style.color = 'var(--a-color)';
+    $('nonceWinTitle').style.color = 'var(--a-color)';
+    body.innerHTML = `
+      <div class="nonce-shield-big" style="background:var(--a-dim);border:2px solid var(--a-color);box-shadow:0 0 24px rgba(255,71,87,0.4);">
+        <svg viewBox="0 0 24 24" fill="none" width="40" height="40"><circle cx="12" cy="12" r="9" stroke="#ff4757" stroke-width="1.5"/><path d="M12 7v6M12 16v1" stroke="#ff4757" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="nonce-title" style="color:var(--a-color);">REPLAY ATTACK SUCCEEDED</div>
+      <div class="nonce-desc">Without a Raspberry Pi edge gateway, there is no nonce validation or token expiry mechanism. The cloud accepted the duplicate packet and recorded a fraudulent attendance entry.</div>
+      <div class="nonce-log">
+        <span style="color:var(--a-color);">[CLOUD] No nonce system implemented</span><br>
+        <span style="color:var(--a-color);">[CLOUD] Token accepted without expiry check</span><br>
+        <span style="color:var(--a-color);">[DB] !! Duplicate record written: EMP_0099 !!</span><br>
+        <span style="color:var(--text-dim);">[DB] Attendance fraud recorded — ghost entry created</span>
+      </div>
+    `;
+  }
+
+  $('nonceOverlay').classList.add('show');
+}
+
+function closeNonce() { $('nonceOverlay').classList.remove('show'); }
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+switchArch('nopi');
+
+// Ambient packet every 8s for visual interest
+let ambientInterval = setInterval(() => {
+  if (!simRunning) {
+    const p = document.createElement('div');
+    p.className = 'packet ' + (arch === 'nopi' ? 'plain' : 'encrypted');
+    p.textContent = arch === 'nopi' ? '···' : '🔒···';
+    p.style.opacity = '0.4';
+    const pipe = $('pipeArea1');
+    pipe.appendChild(p);
+    let pos = 2;
+    const speed = 0.8;
+    const iv = setInterval(() => {
+      pos += speed;
+      p.style.left = pos + '%';
+      p.style.opacity = String(0.4 - pos * 0.003);
+      if (pos > 96) { clearInterval(iv); p.remove(); }
+    }, 16);
+  }
+}, 8000);
+
+// Close overlays on backdrop click
+$('hackerOverlay').addEventListener('click', e => { if(e.target === $('hackerOverlay')) closeHacker(); });
+$('nonceOverlay').addEventListener('click', e => { if(e.target === $('nonceOverlay')) closeNonce(); });
+</script>
+</body>
+</html>

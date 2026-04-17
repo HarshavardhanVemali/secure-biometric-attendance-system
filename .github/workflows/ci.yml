@@ -24,10 +24,10 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v6
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: "3.12"
         cache: 'pip'
         
     - name: Install dependencies
@@ -38,15 +38,18 @@ jobs:
         
     - name: Lint with ruff
       run: |
+        # stop the build if there are Python syntax errors or undefined names
         ruff check .
         
     - name: Run Django Tests
       env:
         SECRET_KEY: "ci-test-key-not-for-production"
         DEBUG: "False"
+        SECURE_SSL_REDIRECT: "False"
         CELERY_BROKER_URL: "redis://localhost:6379/0"
         CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
-        PBKDF2_ITERATIONS: "1000"
+        PBKDF2_ITERATIONS: "1000" # Faster for CI
+        # Dummy gateway credentials for test auth
         GATEWAY_MAC: "00:00:00:00:00:00"
         GATEWAY_API_KEY: "00000000-0000-0000-0000-000000000000"
         GATEWAY_HW_SERIAL: "CI_TEST_SERIAL"
