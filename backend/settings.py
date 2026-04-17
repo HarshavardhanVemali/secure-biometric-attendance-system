@@ -30,6 +30,10 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-development-key-ch
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
+# PBKDF2 iteration count for session key derivation
+# NIST recommendation: 600,000 for production. Set lower in CI for speed.
+PBKDF2_ITERATIONS = int(os.getenv("PBKDF2_ITERATIONS", "600000"))
+
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "biometric.techeduspace.com,campuspark.online,localhost,127.0.0.1").split(",")
 
 # Setup Trusted Origins for POST requests over HTTPS via Proxy

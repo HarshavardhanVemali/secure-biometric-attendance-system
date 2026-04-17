@@ -101,11 +101,12 @@ class SecureSyncView(APIView):
         # 4. Decrypt the Payload using Dynamic Session Key
         # Session Key = PBKDF2(API_KEY, Nonce)
         api_key_str = str(device.api_key).replace('-', '')
+        from django.conf import settings as django_settings
         session_key = hashlib.pbkdf2_hmac(
             'sha256', 
             api_key_str.encode('utf-8'), 
             session.nonce.encode('utf-8'), 
-            1000
+            django_settings.PBKDF2_ITERATIONS
         )[:32]
         
         try:
