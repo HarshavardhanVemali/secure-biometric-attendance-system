@@ -43,7 +43,8 @@ CSRF_TRUSTED_ORIGINS = [
 # ==========================================
 if not DEBUG:
     # Redirect all HTTP traffic to HTTPS
-    SECURE_SSL_REDIRECT = True
+    # Allow CI to override this (Django test client uses HTTP, not HTTPS)
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
     
     # HSTS (HTTP Strict Transport Security) - 1 year
     SECURE_HSTS_SECONDS = 31536000
