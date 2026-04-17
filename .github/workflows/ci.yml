@@ -38,6 +38,7 @@ jobs:
         
     - name: Lint with ruff
       run: |
+        # stop the build if there are Python syntax errors or undefined names
         ruff check .
         
     - name: Run Django Tests
@@ -46,7 +47,8 @@ jobs:
         DEBUG: "False"
         CELERY_BROKER_URL: "redis://localhost:6379/0"
         CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
-        PBKDF2_ITERATIONS: "1000"
+        PBKDF2_ITERATIONS: "1000" # Faster for CI
+        # Add other dummy env vars needed for tests to pass
         GATEWAY_MAC: "00:00:00:00:00:00"
         GATEWAY_API_KEY: "00000000-0000-0000-0000-000000000000"
         GATEWAY_HW_SERIAL: "CI_TEST_SERIAL"

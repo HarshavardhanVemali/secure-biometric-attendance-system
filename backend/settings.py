@@ -30,7 +30,36 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-development-key-ch
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "biometric.techeduspace.com,campuspark.online,localhost,127.0.0.1").split(",")
+
+# Setup Trusted Origins for POST requests over HTTPS via Proxy
+CSRF_TRUSTED_ORIGINS = [
+    "https://biometric.techeduspace.com",
+    "https://campuspark.online",
+]
+
+# ==========================================
+# HTTPS & SECURITY SETTINGS (PRODUCTION)
+# ==========================================
+if not DEBUG:
+    # Redirect all HTTP traffic to HTTPS
+    SECURE_SSL_REDIRECT = True
+    
+    # HSTS (HTTP Strict Transport Security) - 1 year
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Secure Cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # Security Headers
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    # Trust X-Forwarded-Proto from Nginx/Reverse Proxy
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
@@ -54,6 +83,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -127,15 +157,34 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Force Indian Date/Time Formats in Django Admin
+DATE_FORMAT = 'd-m-Y'
+DATETIME_FORMAT = 'd-m-Y h:i A'
+TIME_FORMAT = 'h:i A'
+SHORT_DATE_FORMAT = 'd-m-Y'
+SHORT_DATETIME_FORMAT = 'd-m-Y h:i A'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+# Configure WhiteNoise to serve and compress static files
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
